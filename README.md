@@ -13,7 +13,7 @@
 - Neo 课程资料、完整录音与其他附件尚未进入可携带的仓库资料。
 - 已建立 Astro + Starlight 教程站：41 个页面，包含首页、分组目录、全文搜索与移动端布局。
 - 站点已有吉他、声乐、数学物理乐理、歌曲分析和布鲁斯口琴五个独立模块。
-- 当前没有 GitHub 远程仓库，尚未实际发布；Pages 工作流已经就绪，隐私与发布决定见 [`DEPLOYMENT.md`](DEPLOYMENT.md)。
+- 已推送到公开仓库 [`bigLukeX/music-learning`](https://github.com/bigLukeX/music-learning)，并部署到 [GitHub Pages 教程站](https://biglukex.github.io/music-learning/)；发布与隐私说明见 [`DEPLOYMENT.md`](DEPLOYMENT.md)。
 
 ## 从这里开始
 
@@ -24,6 +24,8 @@
 5. 真正开始练：从 [`docs/guitar/NEXT_8_WEEKS.md`](docs/guitar/NEXT_8_WEEKS.md) 的定位测试开始。
 
 ## 教程站
+
+线上地址：<https://biglukex.github.io/music-learning/>
 
 安装与本地预览：
 

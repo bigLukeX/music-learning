@@ -81,7 +81,8 @@
 - 仿照用户已有摄影教程站的信息架构，使用 Astro + Starlight + MDX
 - 五个大模块各有独立侧边目录，支持全文搜索与手机阅读
 - 教程正文与个人进度/录音分离
-- GitHub Pages 工作流已建立，但因公开性要求尚待最终确认，当前未发布
+- 已公开部署到 `https://biglukex.github.io/music-learning/`，仓库为 `bigLukeX/music-learning`
+- 公开站只包含教程正文；个人进度、录音和私密练习证据继续与站点分离
 
 ### 5. 歌曲练习与分析
 

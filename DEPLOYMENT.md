@@ -4,20 +4,20 @@
 
 ## 当前状态
 
-- 仓库当前只存在于本地。
-- 没有配置 GitHub remote。
+- 公开仓库：<https://github.com/bigLukeX/music-learning>
+- GitHub Pages：<https://biglukex.github.io/music-learning/>
 - 已建立 Astro + Starlight 教程站，并加入 GitHub Pages Actions 工作流。
-- 本地生产构建已经成功生成 41 个页面和全文搜索索引。
-- 因为尚未创建/连接 GitHub 远程仓库，也没有推送，所以当前内容**仍未发布到互联网**。
+- 本地与 GitHub Actions 生产构建均成功生成 41 个页面和全文搜索索引。
+- 2026-08-25 已启用公开 GitHub Pages；首页及五个模块目录均完成公网 `200` 检查。
 
 ## 用户的隐私要求
 
-用户先提出只希望自己访问，随后又要求仿照其公开摄影教程部署到 GitHub Pages。两项要求不能在普通个人 GitHub Pages 上同时满足，因此发布前必须明确选择公开性。默认策略：
+用户先提出只希望自己访问，随后明确授权创建公开仓库并部署到 GitHub Pages。当前站点因此是公开网页。后续默认策略：
 
-1. 不启用公开 GitHub Pages。
-2. 仓库保持本地；若推送 GitHub，则仓库设为 private。
-3. 在确定身份验证方案前，不把个人背景、训练记录、录音或课程笔记发布为网页。
-4. 远程推送已获原则授权，但在用户明确确认“接受公开网页”或改选身份验证方案前，不执行最终发布。
+1. 教程正文可以公开持续更新。
+2. 不把个人录音、嗓音状态、联系方式或未经筛选的学习日志加入公开站点。
+3. 若以后恢复“只有自己访问”的要求，需要迁移到身份验证托管；仅把仓库改为 private 不会自动保护已发布网页。
+4. 修改仓库可见性、域名或访问控制前再次确认。
 
 ## 当前可发布内容
 
@@ -44,13 +44,13 @@
 
 GitHub 官方的私有 Pages 访问控制要求由使用 Enterprise Cloud 的组织托管，通常不适合单人学习项目。
 
-## GitHub Pages 发布步骤
+## GitHub Pages 发布流程
 
-1. 确认网站可以公开访问。
-2. 登录 GitHub，创建目标仓库并连接为 `origin`。
-3. 推送 `main` 分支。
-4. 在仓库 Pages 设置中把 Source 设为 **GitHub Actions**。
-5. 检查 Actions 构建成功与最终 Pages 地址。
+1. 本地提交后推送 `main` 分支。
+2. `.github/workflows/deploy.yml` 自动安装依赖并构建。
+3. 构建产物上传到 GitHub Pages。
+4. 等待 Actions 的 `build` 与 `deploy` 均成功。
+5. 检查线上首页和模块目录。
 
 工作流会根据实际仓库名自动生成正确的子路径，不依赖固定仓库名称。
 

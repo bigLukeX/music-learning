@@ -90,4 +90,4 @@
 
 ### 阶段 I：个人教程站
 
-已建立 Astro + Starlight 教程站，包含吉他、声乐、数学物理乐理、歌曲分析和布鲁斯口琴独立目录。教程正文可持续扩写；个人进度和录音保持分离。GitHub Pages 发布等待用户确认公开性与 GitHub 登录。
+已建立并公开部署 Astro + Starlight 教程站，包含吉他、声乐、数学物理乐理、歌曲分析和布鲁斯口琴独立目录。教程正文可持续扩写；个人进度和录音保持分离。线上地址为 `https://biglukex.github.io/music-learning/`。
