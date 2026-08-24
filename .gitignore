@@ -1,11 +1,21 @@
 .DS_Store
+node_modules/
+dist/
+.astro/
+.vitepress/cache/
+.vitepress/dist/
+
+# Personal practice evidence should stay local unless explicitly reviewed.
+recordings/
+private-progress/
+*.wav
+*.m4a
+*.mp3
+*.mov
+*.mp4
 *.log
 *.tmp
 *.bak
 .env
 .env.*
 !.env.example
-node_modules/
-dist/
-.vitepress/cache/
-.vitepress/dist/

@@ -10,6 +10,7 @@ Maintain this repository as a durable, personal music-learning system. The curre
 2. For current work, read `docs/guitar/README.md`, `docs/guitar/ROADMAP.md`, `docs/guitar/NEO_COURSE_MAP.md`, and `docs/guitar/NEXT_8_WEEKS.md`.
 3. Check `docs/CHAT_INDEX.md` before claiming that a fact came from an earlier conversation.
 4. If the task changes priorities or stable personal context, update the appropriate durable file.
+5. The public tutorial lives in `src/content/docs/`; personal progress and recordings stay outside that directory unless the user explicitly selects them for publication.
 
 ## Source boundaries
 
@@ -40,3 +41,4 @@ Maintain this repository as a durable, personal music-learning system. The curre
 - Prefer one canonical topic page over duplicated explanations.
 - Check local Markdown links after structural changes.
 - Ask before adding dependencies, publishing, deploying, sending messages, or making external commitments.
+- Before a GitHub Pages push, confirm whether the user accepts that ordinary Pages is publicly accessible; never treat a private source repository as private site access.

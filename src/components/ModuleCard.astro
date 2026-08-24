@@ -1,0 +1,18 @@
+---
+interface Props {
+  eyebrow: string;
+  title: string;
+  focus: string;
+  path: string;
+  status?: string;
+}
+
+const { eyebrow, title, focus, path, status = '完整路线' } = Astro.props;
+---
+
+<a class="module-card" href={path}>
+  <span class="module-card__eyebrow">{eyebrow}</span>
+  <h3>{title}</h3>
+  <p>{focus}</p>
+  <span class="module-card__status">{status} →</span>
+</a>

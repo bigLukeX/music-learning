@@ -1,0 +1,310 @@
+:root {
+  --sl-hue-accent: 34;
+  --sl-color-accent-low: hsl(33, 55%, 17%);
+  --sl-color-accent: hsl(36, 88%, 58%);
+  --sl-color-accent-high: hsl(39, 94%, 84%);
+  --music-teal: #68b6b0;
+  --music-rust: #bd5b38;
+  --music-gold: #f1b24a;
+  --sl-font: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  --sl-font-system: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  --sl-font-mono: "SFMono-Regular", "JetBrains Mono", "Menlo", monospace;
+}
+
+:root[data-theme='light'] {
+  --sl-color-bg: hsl(42, 25%, 97%);
+  --sl-color-bg-nav: hsl(42, 28%, 96%);
+  --sl-color-bg-sidebar: hsl(40, 20%, 94%);
+}
+
+:root[data-theme='dark'] {
+  --sl-color-bg: #11120f;
+  --sl-color-bg-nav: #171712;
+  --sl-color-bg-sidebar: #151611;
+  --sl-color-accent-low: hsl(34, 48%, 16%);
+  --sl-color-accent: hsl(37, 90%, 64%);
+  --sl-color-accent-high: hsl(40, 90%, 84%);
+}
+
+body {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(241, 178, 74, 0.12), transparent 32rem),
+    radial-gradient(circle at 88% 12%, rgba(104, 182, 176, 0.11), transparent 28rem),
+    var(--sl-color-bg);
+}
+
+.hero img {
+  filter: drop-shadow(0 28px 48px rgba(24, 19, 11, 0.25));
+}
+
+.hero h1 {
+  letter-spacing: -0.035em;
+}
+
+.sl-markdown-content h2,
+.sl-markdown-content h3 {
+  letter-spacing: 0.01em;
+}
+
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0 2.25rem;
+}
+
+.module-card {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  min-height: 13.5rem;
+  padding: 1.2rem;
+  color: inherit;
+  text-decoration: none;
+  border: 1px solid color-mix(in srgb, var(--music-gold) 28%, transparent);
+  border-radius: 1.2rem;
+  background:
+    linear-gradient(150deg, color-mix(in srgb, var(--sl-color-bg) 90%, white), color-mix(in srgb, var(--music-gold) 8%, var(--sl-color-bg)));
+  box-shadow: 0 18px 42px rgba(37, 28, 14, 0.08);
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.module-card::after {
+  content: "";
+  position: absolute;
+  width: 8rem;
+  height: 8rem;
+  right: -3rem;
+  bottom: -3rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(104, 182, 176, 0.2), transparent 68%);
+}
+
+.module-card:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--music-gold) 56%, transparent);
+  box-shadow: 0 24px 52px rgba(37, 28, 14, 0.13);
+}
+
+.module-card__eyebrow,
+.practice-card__label,
+.section-kicker,
+.current-step > span {
+  display: inline-flex;
+  width: fit-content;
+  padding: 0.24rem 0.58rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.module-card__eyebrow,
+.section-kicker {
+  color: color-mix(in srgb, var(--music-rust) 78%, currentColor);
+  background: color-mix(in srgb, var(--music-gold) 17%, transparent);
+}
+
+.module-card h3 {
+  margin: 0.9rem 0 0;
+  font-size: 1.3rem;
+}
+
+.module-card p {
+  margin: 0.7rem 0 2.4rem;
+  color: var(--sl-color-gray-2);
+}
+
+.module-card__status {
+  position: absolute;
+  left: 1.2rem;
+  bottom: 1.15rem;
+  font-weight: 750;
+  color: var(--sl-color-text-accent);
+}
+
+.current-step {
+  position: relative;
+  overflow: hidden;
+  margin: 1.5rem 0 2rem;
+  padding: 1.25rem 1.35rem;
+  border: 1px solid color-mix(in srgb, var(--music-teal) 42%, transparent);
+  border-radius: 1.2rem;
+  background:
+    linear-gradient(130deg, color-mix(in srgb, var(--music-teal) 14%, var(--sl-color-bg)), color-mix(in srgb, var(--music-gold) 10%, var(--sl-color-bg)));
+}
+
+.current-step::after {
+  content: "";
+  position: absolute;
+  inset: auto -2rem -4rem auto;
+  width: 10rem;
+  height: 10rem;
+  border: 1.1rem solid rgba(241, 178, 74, 0.11);
+  border-radius: 50%;
+}
+
+.current-step > span {
+  color: color-mix(in srgb, var(--music-teal) 72%, currentColor);
+  background: color-mix(in srgb, var(--music-teal) 15%, transparent);
+}
+
+.current-step h2 {
+  margin: 0.75rem 0 0.45rem;
+  font-size: clamp(1.35rem, 3vw, 1.9rem);
+}
+
+.current-step p {
+  max-width: 45rem;
+  margin: 0;
+}
+
+.practice-card {
+  position: relative;
+  overflow: hidden;
+  margin: 1.5rem 0;
+  padding: 1.15rem 1.2rem 1.2rem;
+  border: 1px solid color-mix(in srgb, var(--music-gold) 32%, transparent);
+  border-radius: 1.15rem;
+  background: color-mix(in srgb, var(--music-gold) 6%, var(--sl-color-bg));
+}
+
+.practice-card__label {
+  color: color-mix(in srgb, var(--music-rust) 80%, currentColor);
+  background: color-mix(in srgb, var(--music-gold) 18%, transparent);
+}
+
+.practice-card h3 {
+  margin: 0.75rem 0 0.9rem;
+}
+
+.practice-card dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin: 0;
+}
+
+.practice-card dl > div {
+  padding: 0.75rem;
+  border-radius: 0.8rem;
+  background: color-mix(in srgb, var(--sl-color-bg) 86%, white);
+}
+
+.practice-card dt {
+  margin-bottom: 0.2rem;
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--sl-color-text-accent);
+}
+
+.practice-card dd {
+  margin: 0;
+}
+
+.practice-card__body {
+  margin-top: 1rem;
+}
+
+.practice-card__body > :first-child {
+  margin-top: 0;
+}
+
+.practice-card__body > :last-child {
+  margin-bottom: 0;
+}
+
+.route-steps {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1.25rem 0 2rem;
+  counter-reset: route;
+}
+
+.route-steps > li {
+  position: relative;
+  list-style: none;
+  padding: 0.9rem 1rem 0.9rem 3.7rem;
+  border-left: 3px solid color-mix(in srgb, var(--music-teal) 52%, transparent);
+  border-radius: 0 0.9rem 0.9rem 0;
+  background: color-mix(in srgb, var(--music-teal) 6%, var(--sl-color-bg));
+  counter-increment: route;
+}
+
+.route-steps > li::before {
+  content: counter(route);
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  color: #17130c;
+  background: var(--music-gold);
+  font-weight: 900;
+}
+
+.key-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0;
+}
+
+.key-pair > div {
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--music-teal) 32%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--music-teal) 7%, var(--sl-color-bg));
+}
+
+.key-pair strong {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 1.15rem;
+}
+
+.tab-line {
+  display: block;
+  overflow-x: auto;
+  margin: 1rem 0;
+  padding: 0.95rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--music-gold) 28%, transparent);
+  border-radius: 0.9rem;
+  background: #171713;
+  color: #f7e7c3;
+  font-family: var(--sl-font-mono);
+  white-space: nowrap;
+}
+
+.status-table td:first-child,
+.status-table th:first-child {
+  white-space: nowrap;
+}
+
+.sl-markdown-content table {
+  display: block;
+  overflow-x: auto;
+  width: 100%;
+  font-size: 0.93rem;
+}
+
+@media (max-width: 50rem) {
+  .practice-card dl,
+  .key-pair {
+    grid-template-columns: 1fr;
+  }
+
+  .module-card {
+    min-height: 12rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .module-card {
+    transition: none;
+  }
+}

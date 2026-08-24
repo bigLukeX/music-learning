@@ -1,0 +1,15 @@
+---
+interface Props {
+  label?: string;
+  title: string;
+  detail: string;
+}
+
+const { label = '当前只做这一步', title, detail } = Astro.props;
+---
+
+<aside class="current-step">
+  <span>{label}</span>
+  <h2>{title}</h2>
+  <p>{detail}</p>
+</aside>

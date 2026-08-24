@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 520" role="img" aria-labelledby="title desc">
+  <title id="title">音乐学习路线插图</title>
+  <desc id="desc">吉他、声波与口琴组成的抽象音乐学习地图</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#25231d"/>
+      <stop offset="1" stop-color="#101114"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#ffd483"/>
+      <stop offset="1" stop-color="#d88a2e"/>
+    </linearGradient>
+  </defs>
+  <rect x="28" y="28" width="664" height="464" rx="56" fill="url(#bg)"/>
+  <path d="M88 292c72-92 132 92 204 0s132 92 204 0 100 42 140-8" fill="none" stroke="#68b6b0" stroke-width="14" stroke-linecap="round" opacity=".72"/>
+  <g transform="translate(230 72) rotate(-18)">
+    <path d="M142 44h42v292h-42z" fill="url(#gold)"/>
+    <path d="M118 20h90v64h-90z" rx="18" fill="#e5a33f"/>
+    <path d="M102 290c-66-30-104 28-86 84 18 55 82 72 134 32 52 40 116 23 134-32 18-56-20-114-86-84l-48 28z" fill="#bd5b38"/>
+    <circle cx="150" cy="354" r="34" fill="#181613"/>
+    <path d="M150 54v276M162 54v276M174 54v276" stroke="#f6e9c8" stroke-width="3" opacity=".8"/>
+  </g>
+  <g transform="translate(472 348)">
+    <rect x="0" y="0" width="164" height="62" rx="16" fill="#d9d0bd"/>
+    <path d="M20 13v36M37 13v36M54 13v36M71 13v36M88 13v36M105 13v36M122 13v36M139 13v36" stroke="#6e695f" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <circle cx="604" cy="124" r="24" fill="#f1b24a" opacity=".9"/>
+  <circle cx="104" cy="124" r="12" fill="#68b6b0" opacity=".9"/>
+</svg>

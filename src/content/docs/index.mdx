@@ -1,0 +1,52 @@
+---
+title: 个人音乐学习教程
+description: 从吉他开始，系统学习演奏、声乐、乐理、歌曲分析与布鲁斯口琴。
+template: splash
+sidebar:
+  hidden: true
+hero:
+  tagline: 听见、理解、演奏，再变成自己的音乐
+  image:
+    file: ../../assets/hero-music.svg
+    alt: 吉他、声波和布鲁斯口琴组成的音乐学习地图
+  actions:
+    - text: 查看完整目录
+      link: ./course-outline/
+      icon: right-arrow
+      variant: primary
+    - text: 开始吉他定位 A
+      link: ./guitar/positioning-a/
+      variant: secondary
+    - text: 查看口琴路线
+      link: ./harmonica/
+      icon: puzzle
+---
+
+import ModuleCard from '../../components/ModuleCard.astro';
+import CurrentStep from '../../components/CurrentStep.astro';
+
+这不是零散技巧合集，而是一套可以长期学习、练习、提交证据和复盘的个人音乐教程。内容已经按能力依赖排好顺序：当前先完成吉他主线，相关乐理、听力和歌曲练习同步服务于吉他；之后继续声乐、数学物理乐理、歌曲分析与布鲁斯口琴。
+
+<CurrentStep
+  title="吉他定位练习 A：节奏与完整歌曲"
+  detail="现在不进入高级内容。先录一首会弹的简单歌，再完成四分与八分音符的四和弦循环；根据真实结果确定第一个训练关卡。"
+/>
+
+<div class="section-kicker">五个大模块</div>
+
+<div class="module-grid">
+  <ModuleCard eyebrow="当前主线" title="吉他" focus="节奏、技术、指板、耳朵、和声、扒歌、民谣与电吉他、即兴和编曲。" path="./guitar/" status="从定位 A 开始" />
+  <ModuleCard eyebrow="身体乐器" title="声乐" focus="安全发声、高音与混声、弱唱、旋律线、英文节奏和歌曲落地。" path="./vocal/" status="吉他后系统推进" />
+  <ModuleCard eyebrow="底层模型" title="数学物理乐理" focus="从振动、泛音和律制，到音程、和声、节奏与真实听感。" path="./theory/" status="与乐器互相验证" />
+  <ModuleCard eyebrow="音乐整合" title="歌曲练习与分析" focus="把一首歌拆成结构、和声、声部、演唱、吉他伴奏与复盘任务。" path="./songs/" status="已有四首案例" />
+  <ModuleCard eyebrow="A / Bb 两把琴" title="布鲁斯口琴" focus="从单音和呼吸开始，直接建立第二把位、压音、12 小节与吉他问答。" path="./harmonica/" status="A 琴吹 E，Bb 琴吹 F" />
+</div>
+
+## 这套教程怎么学
+
+1. 每次只做当前页面给出的任务，不按兴趣随机跳章。
+2. “看完”不等于完成；必须留下录音、节拍器速度、TAB、音名或文字复盘之一。
+3. 通关标准优先看稳定、可重复和能否从错误中继续，不追求一次性的极限表现。
+4. 个人录音和进度默认留在本地，不自动进入公开网页。
+
+从 [完整课程目录](./course-outline/) 看全貌，或直接开始当前唯一任务：[吉他定位练习 A](./guitar/positioning-a/)。

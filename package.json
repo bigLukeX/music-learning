@@ -1,0 +1,18 @@
+{
+  "name": "personal-music-learning",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A GitHub Pages-ready personal music course built with Astro and Starlight.",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.41.7",
+    "astro": "^7.2.5"
+  }
+}

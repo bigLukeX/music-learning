@@ -1,0 +1,21 @@
+---
+interface Props {
+  title: string;
+  goal: string;
+  duration?: string;
+  pass: string;
+}
+
+const { title, goal, duration = '按当前能力调整', pass } = Astro.props;
+---
+
+<section class="practice-card">
+  <span class="practice-card__label">练习任务</span>
+  <h3>{title}</h3>
+  <dl>
+    <div><dt>目的</dt><dd>{goal}</dd></div>
+    <div><dt>时间</dt><dd>{duration}</dd></div>
+    <div><dt>通过</dt><dd>{pass}</dd></div>
+  </dl>
+  <div class="practice-card__body"><slot /></div>
+</section>
