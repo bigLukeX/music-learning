@@ -2,7 +2,7 @@
 
 ## Mission
 
-Maintain this repository as a durable, personal music-learning system. The current active focus is guitar. Follow the established guitar sequence in `docs/guitar/ROADMAP.md`; do not replace it with a new framework. Vocal, harmonica, and other material remain available but paused unless the user explicitly switches focus.
+Maintain this repository as a durable, personal music-learning system. The current phase is guitar-first, not guitar-only. Finish and execute the established guitar sequence in `docs/guitar/ROADMAP.md` before expanding the other modules. After the guitar section, continue with theory, vocal, song analysis, and harmonica according to `ROADMAP.md`; do not treat them as abandoned. Do not replace the established guitar framework with a new one.
 
 ## Start every task
 

@@ -7,7 +7,7 @@
 3. 确认项目入口能看到 `.git`、`README.md`、`AGENTS.override.md` 和 `docs/`。
 4. 在这个本地项目中新建任务，发送下面的接管提示。
 
-> 接管这个仓库。先读 README.md、PROJECT_CONTEXT.md、ROADMAP.md、AGENTS.override.md，以及 docs/guitar/ 下的四份核心文件。当前只推进吉他主线，严格沿用已有路线。先带我完成 NEXT_8_WEEKS.md 的定位练习 A；根据结果更新 PROGRESS.md，不要直接跳到后面的高级内容。
+> 接管这个仓库。先读 README.md、PROJECT_CONTEXT.md、ROADMAP.md、AGENTS.override.md，以及 docs/guitar/ 下的四份核心文件。当前先完成吉他部分，严格沿用已有路线；吉他完成后还要继续建设其他音乐模块。先带我完成 NEXT_8_WEEKS.md 的定位练习 A；根据结果更新 PROGRESS.md，不要直接跳到后面的高级内容。
 
 这一步完成后，不需要每次重新粘贴旧聊天。Codex 会从仓库文件恢复稳定上下文；新的任务只需说明这次要完成的具体结果。
 
@@ -30,4 +30,3 @@
 ## 命令行方式（可选）
 
 若使用 Codex CLI，从仓库目录启动，或用 `codex -C <music-learning 的路径>` 指定项目目录。桌面应用用户不需要这一步。
-
