@@ -2,10 +2,11 @@
 
 ## 最简单的做法（Codex 桌面应用）
 
-1. 解压 `music-learning-repo.zip`，得到完整的 `music-learning` 文件夹；如果直接使用已经生成的本地文件夹，可跳过解压。
-2. 在 Codex 中选择“打开文件夹 / 添加本地项目”，选择 **`music-learning` 文件夹本身**，不要只打开某个 Markdown 文件。
-3. 确认项目入口能看到 `.git`、`README.md`、`AGENTS.override.md` 和 `docs/`。
-4. 在这个本地项目中新建任务，发送下面的接管提示。
+1. 从 GitHub 拉取 `bigLukeX/music-learning`；也可以解压已有的完整仓库压缩包。
+2. 按 [`MAINTENANCE.md`](MAINTENANCE.md) 完成 `npm ci` 与 `npm run build` 验收。
+3. 在 Codex 中选择“打开文件夹 / 添加本地项目”，选择 **`music-learning` 文件夹本身**，不要只打开某个 Markdown 文件。
+4. 确认项目入口能看到 `.git`、`README.md`、`AGENTS.override.md` 和 `docs/`。
+5. 在这个本地项目中新建任务，发送下面的接管提示。
 
 > 接管这个仓库。先读 README.md、PROJECT_CONTEXT.md、ROADMAP.md、AGENTS.override.md，以及 docs/guitar/ 下的四份核心文件。当前先完成吉他部分，严格沿用已有路线；吉他完成后还要继续建设其他音乐模块。先带我完成 NEXT_8_WEEKS.md 的定位练习 A；根据结果更新 PROGRESS.md，不要直接跳到后面的高级内容。
 

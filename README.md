@@ -1,6 +1,6 @@
 # 个人音乐学习系统
 
-这是一个从 ChatGPT“音乐”项目迁移出来、由 Codex 持续维护的个人音乐学习仓库，同时也是可部署到 GitHub Pages 的完整教程站。
+这是一个从 ChatGPT“音乐”项目迁移出来、由 Codex 持续维护的个人音乐学习仓库，同时也是可部署到 GitHub Pages 的系统教程站。
 
 项目的核心不是囤积聊天记录，而是把长期讨论沉淀为可复习、可练习、可验证、可继续扩展的知识体系。**内容建设按顺序推进，当前先把吉他部分做完整、做细**：沿用已经确定的路线，覆盖节奏、技术、指板、耳朵、和声、扒歌、民谣/电吉他分支、即兴和编曲。吉他部分完成后，继续建设声乐、数学物理乐理、歌曲分析和布鲁斯口琴；它们不是被取消。
 
@@ -11,7 +11,7 @@
 - 原聊天没有整段复制进仓库；已将关键信息沉淀为结构化文档。
 - `sources/` 预留给用户明确加入的原始资料，Codex 将其视为只读输入。
 - Neo 课程资料、完整录音与其他附件尚未进入可携带的仓库资料。
-- 已建立 Astro + Starlight 教程站：41 个页面，包含首页、分组目录、全文搜索与移动端布局。
+- 已建立 Astro + Starlight 教程站：64 个页面，包含首页、分组目录、全文搜索与移动端布局；五个模块均有基础、首轮课程、综合应用和通关标准。
 - 站点已有吉他、声乐、数学物理乐理、歌曲分析和布鲁斯口琴五个独立模块。
 - 已推送到公开仓库 [`bigLukeX/music-learning`](https://github.com/bigLukeX/music-learning)，并部署到 [GitHub Pages 教程站](https://biglukex.github.io/music-learning/)；发布与隐私说明见 [`DEPLOYMENT.md`](DEPLOYMENT.md)。
 
@@ -27,10 +27,10 @@
 
 线上地址：<https://biglukex.github.io/music-learning/>
 
-安装与本地预览：
+使用 Node.js `22.19+`。第一次克隆后安装与本地预览：
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
@@ -42,6 +42,8 @@ npm run build
 
 教程正文位于 `src/content/docs/`，侧边目录位于 `astro.config.mjs`。GitHub Pages 发布流程位于 `.github/workflows/deploy.yml`。
 
+换设备后的完整接管、唯一事实来源和发布检查见 [`MAINTENANCE.md`](MAINTENANCE.md)。
+
 交给 Codex 时可以直接说：
 
 > 接管这个仓库。先读 START_HERE.md、PROJECT_CONTEXT.md、ROADMAP.md、AGENTS.override.md 和 docs/guitar/ 下的路线文件。当前先完成吉他部分，严格沿用已有路线；吉他之后还要继续建设其他音乐模块，不要删除或永久搁置。先执行定位测试，再从第一个未通过的关卡开始。
@@ -52,6 +54,7 @@ npm run build
 .
 ├── README.md
 ├── START_HERE.md             # 如何让 Codex 接管
+├── MAINTENANCE.md            # 跨设备构建、事实来源与维护流程
 ├── DEPLOYMENT.md             # 当前发布状态与隐私规则
 ├── AGENTS.override.md        # Codex 接管规则
 ├── PROJECT_CONTEXT.md        # 稳定的个人背景、目标与约束
@@ -59,7 +62,7 @@ npm run build
 ├── astro.config.mjs          # 教程标题与侧边目录
 ├── package.json              # Astro / Starlight 构建配置
 ├── src/
-│   ├── content/docs/         # 41 个教程页面
+│   ├── content/docs/         # 64 个教程页面
 │   ├── components/           # 模块卡片、练习卡片与当前任务组件
 │   ├── assets/               # 本地教程插图
 │   └── styles/custom.css     # 全站视觉与响应式样式

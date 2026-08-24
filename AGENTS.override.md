@@ -11,6 +11,7 @@ Maintain this repository as a durable, personal music-learning system. The curre
 3. Check `docs/CHAT_INDEX.md` before claiming that a fact came from an earlier conversation.
 4. If the task changes priorities or stable personal context, update the appropriate durable file.
 5. The public tutorial lives in `src/content/docs/`; personal progress and recordings stay outside that directory unless the user explicitly selects them for publication.
+6. Read `MAINTENANCE.md` before changing project structure, dependencies, build settings, or deployment.
 
 ## Source boundaries
 
@@ -39,6 +40,7 @@ Maintain this repository as a durable, personal music-learning system. The curre
 - Update `docs/guitar/PROGRESS.md` after a baseline, weekly review, or passed gate.
 - Add new chat or source coverage to `docs/CHAT_INDEX.md` before relying on it broadly.
 - Prefer one canonical topic page over duplicated explanations.
+- Follow the source-of-truth table in `MAINTENANCE.md`: root/docs files govern personal state and route; `src/content/docs/` governs public teaching content.
 - Check local Markdown links after structural changes.
 - Ask before adding dependencies, publishing, deploying, sending messages, or making external commitments.
 - Before a GitHub Pages push, confirm whether the user accepts that ordinary Pages is publicly accessible; never treat a private source repository as private site access.

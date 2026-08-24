@@ -4,6 +4,9 @@
   "private": true,
   "description": "A GitHub Pages-ready personal music course built with Astro and Starlight.",
   "type": "module",
+  "engines": {
+    "node": ">=22.19.0 <23"
+  },
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
