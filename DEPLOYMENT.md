@@ -7,8 +7,9 @@
 - 公开仓库：<https://github.com/bigLukeX/music-learning>
 - GitHub Pages：<https://biglukex.github.io/music-learning/>
 - 已建立 Astro + Starlight 教程站，并加入 GitHub Pages Actions 工作流。
-- 本地与 GitHub Actions 生产构建均成功生成 41 个页面和全文搜索索引。
+- 本地与 GitHub Actions 生产构建均成功生成 64 个页面和全文搜索索引。
 - 2026-08-25 已启用公开 GitHub Pages；首页及五个模块目录均完成公网 `200` 检查。
+- 2026-08-25 提交 `100dc3a` 将五个模块扩充为系统课程；新增代表页面与资料来源页均完成公网 `200` 检查，首页已显示 64 页。
 
 ## 用户的隐私要求
 
