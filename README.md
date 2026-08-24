@@ -2,7 +2,7 @@
 
 这是一个从 ChatGPT“音乐”项目迁移出来、由 Codex 持续维护的个人音乐学习仓库。
 
-项目的核心不是囤积聊天记录，而是把长期讨论沉淀为可复习、可练习、可验证、可继续扩展的知识体系。当前第一目标是**把歌唱好**；乐理、吉他、歌曲分析与布鲁斯口琴为相互支持的学习支线。
+项目的核心不是囤积聊天记录，而是把长期讨论沉淀为可复习、可练习、可验证、可继续扩展的知识体系。**当前阶段只推进吉他主线**：先按已经确定的完整路线建立节奏、技术、指板和耳朵，再进入和声、扒歌、民谣/电吉他分支、即兴和编曲。声乐、口琴和其他主题保留资料，但暂不抢占训练时间。
 
 ## 当前状态
 
@@ -14,20 +14,22 @@
 
 ## 从这里开始
 
-1. 阅读 [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md)，了解学习背景与已确认需求。
-2. 阅读 [`ROADMAP.md`](ROADMAP.md)，选择当前阶段。
-3. 从 [`docs/BACKLOG.md`](docs/BACKLOG.md) 领取一个小而明确的任务。
-4. 新资料先登记到 [`docs/CHAT_INDEX.md`](docs/CHAT_INDEX.md)，再沉淀到对应主题文档。
+1. 第一次交给 Codex：阅读 [`START_HERE.md`](START_HERE.md)。
+2. 学习总顺序：阅读 [`ROADMAP.md`](ROADMAP.md)。
+3. 吉他详细路线：阅读 [`docs/guitar/ROADMAP.md`](docs/guitar/ROADMAP.md)。
+4. NeoMusic 课程对应关系：阅读 [`docs/guitar/NEO_COURSE_MAP.md`](docs/guitar/NEO_COURSE_MAP.md)。
+5. 真正开始练：从 [`docs/guitar/NEXT_8_WEEKS.md`](docs/guitar/NEXT_8_WEEKS.md) 的定位测试开始。
 
 交给 Codex 时可以直接说：
 
-> 先阅读 README.md、PROJECT_CONTEXT.md、ROADMAP.md 和 AGENTS.override.md。根据 BACKLOG 选择当前最高优先级任务，先说明你依据了哪些已确认信息，再完成内容并更新进度。
+> 接管这个仓库。先读 START_HERE.md、PROJECT_CONTEXT.md、ROADMAP.md、AGENTS.override.md 和 docs/guitar/ 下的路线文件。当前只推进吉他主线；先执行定位测试，再从第一个未通过的关卡开始，不要另起一套路线。
 
 ## 内容结构
 
 ```text
 .
 ├── README.md
+├── START_HERE.md             # 如何让 Codex 接管
 ├── AGENTS.override.md        # Codex 接管规则
 ├── PROJECT_CONTEXT.md        # 稳定的个人背景、目标与约束
 ├── ROADMAP.md                # 项目阶段与学习主线
@@ -36,7 +38,7 @@
 │   ├── CHAT_INDEX.md         # 对话来源与待补资料
 │   ├── theory/README.md      # 数学物理视角乐理
 │   ├── vocal/README.md       # 声乐训练
-│   ├── guitar/README.md      # 吉他学习
+│   ├── guitar/               # 当前主线：路线、课程映射与训练计划
 │   ├── harmonica/README.md   # 布鲁斯口琴
 │   └── songs/README.md       # 歌曲练习与分析
 ├── archive/README.md         # 原始资料归档约定
@@ -46,6 +48,7 @@
 ## 项目原则
 
 - 用底层模型帮助理解，但每个概念最终都要落到听觉、演奏或歌唱练习。
+- 当前训练优先级为吉他；除非用户主动切换，不展开其他长期主线。
 - 区分“能碰到的音”“能唱出的音”和“能稳定表演的音”。
 - 不高估当前吉他水平；路线要从真实起点逐步推进。
 - 歌曲文档以结构、练法、和声和演唱处理为主，不保存未授权的完整歌词或乐谱。

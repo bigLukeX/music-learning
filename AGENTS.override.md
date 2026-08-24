@@ -2,12 +2,12 @@
 
 ## Mission
 
-Maintain this repository as a durable, personal music-learning system. The user's primary goal is to sing songs well. Music theory, guitar, song analysis, and blues harmonica should support practical musicianship rather than become disconnected collections of facts.
+Maintain this repository as a durable, personal music-learning system. The current active focus is guitar. Follow the established guitar sequence in `docs/guitar/ROADMAP.md`; do not replace it with a new framework. Vocal, harmonica, and other material remain available but paused unless the user explicitly switches focus.
 
 ## Start every task
 
 1. Read `README.md`, `PROJECT_CONTEXT.md`, and `ROADMAP.md`.
-2. Read the relevant topic file under `docs/`.
+2. For current work, read `docs/guitar/README.md`, `docs/guitar/ROADMAP.md`, `docs/guitar/NEO_COURSE_MAP.md`, and `docs/guitar/NEXT_8_WEEKS.md`.
 3. Check `docs/CHAT_INDEX.md` before claiming that a fact came from an earlier conversation.
 4. If the task changes priorities or stable personal context, update the appropriate durable file.
 
@@ -27,13 +27,16 @@ Maintain this repository as a durable, personal music-learning system. The user'
 - Keep exercises concrete: duration, repetitions, tempo or difficulty gate, success criterion, and stop condition when relevant.
 - For vocal guidance, prioritize comfort, repeatability, and absence of pain or persistent hoarseness. Do not diagnose medical conditions.
 - Do not assume advanced guitar ability. Explain notation and technique at the user's current level.
+- Use gates rather than calendar pressure: advance when the performance criteria are repeatable, not merely because a week has passed.
+- Keep the four foundation lanes alive in parallel: rhythm, physical technique, fretboard, and ear/transcription. Repertoire is where they are integrated.
+- Treat NeoMusic as the main owned course resource. Map its lessons to abilities; do not reproduce its copyrighted lesson content.
 
 ## Repository maintenance
 
 - Keep `PROJECT_CONTEXT.md` limited to stable, user-confirmed information.
 - Keep tasks small and actionable in `docs/BACKLOG.md`; move completed work to its Completed section.
+- Update `docs/guitar/PROGRESS.md` after a baseline, weekly review, or passed gate.
 - Add new chat or source coverage to `docs/CHAT_INDEX.md` before relying on it broadly.
 - Prefer one canonical topic page over duplicated explanations.
 - Check local Markdown links after structural changes.
 - Ask before adding dependencies, publishing, deploying, sending messages, or making external commitments.
-
