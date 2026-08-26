@@ -58,6 +58,7 @@ export default defineConfig({
             'vocal',
             'vocal/baseline',
             'vocal/safe-practice',
+            'vocal/daily-practice',
             'vocal/breath-phonation-resonance',
             'vocal/high-notes-and-mix',
             'vocal/soft-singing',
