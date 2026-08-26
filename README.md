@@ -11,6 +11,7 @@
 - 原聊天没有整段复制进仓库；已将关键信息沉淀为结构化文档。
 - `sources/` 预留给用户明确加入的原始资料，Codex 将其视为只读输入。
 - Neo 课程资料、完整录音与其他附件尚未进入可携带的仓库资料。
+- 吉他日程已适配为每个自然周 3 次正式练习；一个训练周包含 D1–D6，通常跨两个自然周，不要求每天练。
 - 已建立 Astro + Starlight 教程站：64 个页面，包含首页、分组目录、全文搜索与移动端布局；五个模块均有基础、首轮课程、综合应用和通关标准。
 - 站点已有吉他、声乐、数学物理乐理、歌曲分析和布鲁斯口琴五个独立模块。
 - 已推送到公开仓库 [`bigLukeX/music-learning`](https://github.com/bigLukeX/music-learning)，并部署到 [GitHub Pages 教程站](https://biglukex.github.io/music-learning/)；发布与隐私说明见 [`DEPLOYMENT.md`](DEPLOYMENT.md)。

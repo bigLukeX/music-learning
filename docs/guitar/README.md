@@ -4,9 +4,9 @@
 
 ## 四份核心文件
 
-1. [`ROADMAP.md`](ROADMAP.md)：完整能力路线与一年阶段
+1. [`ROADMAP.md`](ROADMAP.md)：完整能力路线与阶段通关标准
 2. [`NEO_COURSE_MAP.md`](NEO_COURSE_MAP.md)：NeoMusic 课程如何嵌入路线
-3. [`NEXT_8_WEEKS.md`](NEXT_8_WEEKS.md)：定位测试和前两个月逐周计划
+3. [`NEXT_8_WEEKS.md`](NEXT_8_WEEKS.md)：定位测试和前 8 个训练周的每周三练计划
 4. [`PROGRESS.md`](PROGRESS.md)：基线、周复盘与通关记录
 
 ## 学习原则
@@ -20,4 +20,6 @@
 
 ## 当前入口
 
-先完成 [`NEXT_8_WEEKS.md`](NEXT_8_WEEKS.md) 的“定位练习 A/B”。定位只决定从哪一周开始，不改变整条路线。
+先完成 [`NEXT_8_WEEKS.md`](NEXT_8_WEEKS.md) 的“定位练习 A/B”。定位只决定从哪个训练周开始，不改变整条路线。
+
+NeoMusic 的官方交错顺序和三份课件映射已核对，见 [`NEO_COURSE_MAP.md`](NEO_COURSE_MAP.md)。前 8 个训练周只进入“音符篇 + 节奏 1–6 + 机能篇”，和声与 CAGED 不提前。默认每个自然周练 3 次，一个训练周跨两个自然周。
