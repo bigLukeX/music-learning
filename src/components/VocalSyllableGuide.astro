@@ -1,0 +1,242 @@
+---
+const syllables = [
+  {
+    code: 'mm / mmm',
+    chinese: '闭嘴轻哼“嗯——”',
+    action: '双唇轻闭，牙齿和下巴别咬紧；声音连续，不追求鼻子震得大。',
+    use: '轻起音、哼鸣、音高连续',
+    speech: 'mmm',
+    listen: '听 mmm',
+  },
+  {
+    code: 'ng',
+    chinese: '英文 sing 的最后一个音',
+    action: '先说 sing，再停在尾部 /ŋ/；舌后部抬起，嘴可以微张，不要继续加“嗯”的元音。',
+    use: '头声入口、换区、从哼鸣过渡到元音',
+    speech: 'sing',
+    listen: '听 sing 尾音',
+  },
+  {
+    code: 'wu / woo',
+    chinese: '接近“呜——”',
+    action: '嘴唇圆而松，像轻声说“呜”；不要噘得很硬，也不要吹出大量气。',
+    use: '头声、滑音、小音量',
+    speech: 'woo',
+    listen: '听 woo',
+  },
+  {
+    code: 'mum',
+    chinese: '接近英文“马姆”，中间元音很短',
+    action: '两端的 m 轻轻闭唇，中间像英语 mum 的短元音；不要唱成很开的“妈——”。',
+    use: '轻闭合、混声连接、琶音',
+    speech: 'mum',
+    listen: '听 mum',
+  },
+  {
+    code: 'gug',
+    chinese: '接近“格-啊-格”的短音',
+    action: '两个 g 都短而轻，中间是短元音；不要用舌根和喉咙猛撞。',
+    use: '清楚起音、混声与换区五音',
+    speech: 'gug',
+    listen: '听 gug',
+  },
+  {
+    code: 'vv',
+    chinese: '英文 very 开头的有声 v',
+    action: '上牙轻碰下唇，持续发带振动的 v；手摸喉部应有轻振动，别发成无声的 f。',
+    use: '无练声瓶时的半闭合替代',
+    speech: 'very',
+    listen: '听 very 开头',
+  },
+  {
+    code: 'da / dah',
+    chinese: '轻声“哒”',
+    action: '舌尖轻碰上齿龈后立刻离开；每个音分开但不断气，不要用下巴逐音点头。',
+    use: '转音、五音均匀度、八度音阶',
+    speech: 'dah',
+    listen: '听 dah',
+  },
+  {
+    code: 'ya / yah',
+    chinese: '轻声“呀”',
+    action: '开头 y 很短，后面的元音承担时值；不要把每个音都咬成很重的“伊呀”。',
+    use: '琶音换音、连贯性',
+    speech: 'yah',
+    listen: '听 yah',
+  },
+  {
+    code: 'lu / loo',
+    chinese: '接近“噜/卢”',
+    action: 'l 只在音头轻触一次，后面的 u/oo 承担音高；回唱时先想好目标音再开口。',
+    use: '听唱回声、旋律记忆',
+    speech: 'loo',
+    listen: '听 loo',
+  },
+  {
+    code: 'i–e–a–o–u',
+    chinese: '衣—诶—啊—哦—乌',
+    action: '先在同一音高慢慢换元音；音量和音高尽量不变，不追求夸张口型。',
+    use: '元音统一、音准和声道调整',
+    speech: 'ee, eh, ah, oh, oo',
+    listen: '听元音顺序',
+  },
+];
+---
+
+<vocal-syllable-guide>
+  <section class="syllable-guide" aria-labelledby="syllable-guide-title">
+    <div class="syllable-guide__heading">
+      <span>先听发音，再跟钢琴</span>
+      <h2 id="syllable-guide-title">练声音节字典</h2>
+      <p>点击只会播放慢速发音示意，不是专业真人范唱。听懂音节后，再回到自动钢琴按目标音高跟唱。</p>
+    </div>
+
+    <div class="syllable-guide__grid">
+      {syllables.map((item) => (
+        <article>
+          <div class="syllable-guide__name">
+            <code>{item.code}</code>
+            <strong>{item.chinese}</strong>
+          </div>
+          <p>{item.action}</p>
+          <small>用途：{item.use}</small>
+          <button type="button" data-speech={item.speech} data-label={item.code}>{item.listen}</button>
+        </article>
+      ))}
+    </div>
+
+    <p class="syllable-guide__status" data-speech-status aria-live="polite">选择一个音节试听；浏览器声音只负责示意读法。</p>
+  </section>
+</vocal-syllable-guide>
+
+<script>
+  class VocalSyllableGuide extends HTMLElement {
+    connectedCallback() {
+      this.status = this.querySelector('[data-speech-status]');
+      this.querySelectorAll('[data-speech]').forEach((button) => {
+        button.addEventListener('click', () => this.speak(button));
+      });
+    }
+
+    disconnectedCallback() {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    }
+
+    speak(button) {
+      if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
+        this.status.textContent = '当前浏览器不支持语音播放；请按卡片中的中文近似读法练习。';
+        return;
+      }
+
+      const text = button.dataset.speech;
+      const label = button.dataset.label;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      utterance.rate = 0.62;
+      utterance.pitch = 1;
+      const voice = window.speechSynthesis.getVoices().find((candidate) => candidate.lang?.toLowerCase().startsWith('en'));
+      if (voice) utterance.voice = voice;
+      utterance.addEventListener('start', () => {
+        this.status.textContent = `正在播放 ${label} 的发音示意。`;
+      });
+      utterance.addEventListener('end', () => {
+        this.status.textContent = `已播放 ${label}。现在回到钢琴，只模仿读法，不模仿合成语音的音色。`;
+      });
+      utterance.addEventListener('error', () => {
+        this.status.textContent = '语音播放失败；请使用卡片中的中文近似读法。';
+      });
+      window.speechSynthesis.speak(utterance);
+    }
+  }
+
+  if (!customElements.get('vocal-syllable-guide')) {
+    customElements.define('vocal-syllable-guide', VocalSyllableGuide);
+  }
+</script>
+
+<style>
+  .syllable-guide {
+    margin: 1.5rem 0 2rem;
+  }
+
+  .syllable-guide__heading > span {
+    display: inline-flex;
+    padding: 0.24rem 0.58rem;
+    border-radius: 999px;
+    color: color-mix(in srgb, var(--music-rust) 78%, currentColor);
+    background: color-mix(in srgb, var(--music-gold) 17%, transparent);
+    font-size: 0.76rem;
+    font-weight: 800;
+  }
+
+  .syllable-guide__heading h2 {
+    margin: 0.7rem 0 0.45rem;
+  }
+
+  .syllable-guide__heading p {
+    margin: 0;
+    color: var(--sl-color-gray-2);
+  }
+
+  .syllable-guide__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+    margin-top: 1rem;
+  }
+
+  .syllable-guide article {
+    display: grid;
+    align-content: start;
+    gap: 0.55rem;
+    padding: 0.9rem;
+    border: 1px solid color-mix(in srgb, var(--music-gold) 30%, transparent);
+    border-radius: 0.9rem;
+    background: color-mix(in srgb, var(--music-gold) 5%, var(--sl-color-bg));
+  }
+
+  .syllable-guide__name {
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .syllable-guide__name code {
+    width: fit-content;
+    font-size: 1rem;
+  }
+
+  .syllable-guide article p,
+  .syllable-guide article small {
+    margin: 0;
+  }
+
+  .syllable-guide article small {
+    color: var(--sl-color-gray-2);
+  }
+
+  .syllable-guide button {
+    justify-self: start;
+    min-height: 2.3rem;
+    margin-top: 0.15rem;
+    padding: 0.45rem 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--music-teal) 45%, transparent);
+    border-radius: 0.65rem;
+    background: color-mix(in srgb, var(--music-teal) 12%, var(--sl-color-bg));
+    color: inherit;
+    font: inherit;
+    font-weight: 750;
+    cursor: pointer;
+  }
+
+  .syllable-guide__status {
+    margin-bottom: 0;
+    color: var(--sl-color-gray-2);
+  }
+
+  @media (max-width: 42rem) {
+    .syllable-guide__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

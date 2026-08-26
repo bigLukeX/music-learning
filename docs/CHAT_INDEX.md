@@ -51,6 +51,8 @@
 |---|---|---|
 | 声乐日常练声与自动伴奏 | 声乐部分需要可直接跟唱的固定流程，并希望由浏览器模拟钢琴自动播放、移调和留空回唱 | `PROJECT_CONTEXT.md`、`docs/vocal/README.md`、`src/content/docs/vocal/daily-practice.mdx` |
 | 常规练声分类与练声瓶 | 每次约20分钟常规练声；头声/混声闭合/元音/转音另以10分钟专项轮换；用户拥有练声瓶，并要求有瓶/无瓶两个版本 | 同上；练声瓶型号与原厂参数仍待确认 |
+| 自动钢琴选择说明与显示 | 需要明确说明套餐、器材、起音、天花板和速度如何选择，并修复浅色主题下选中值不可读 | `src/components/VocalPracticePlayer.astro`、`src/content/docs/vocal/daily-practice.mdx` |
+| 练声音节与发音示意 | 有一定跟练经验，但不熟悉 `wu/ng/mum/gug/vv` 等音节；需要中文说明和可播放发音 | `PROJECT_CONTEXT.md`、`src/components/VocalSyllableGuide.astro`、日常练声页 |
 
 当前实现把它定位为吉他主线期间的声乐维护，不据此宣称声乐定位已完成，也不提前改写正式声乐进度。练声瓶与唇颤音、`vv` 作为半闭合工具互换，不在型号未知时编造水位参数。
 

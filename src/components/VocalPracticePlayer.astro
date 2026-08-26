@@ -43,6 +43,7 @@ const ceilingNotes = [
           <option value="agility">专项 · 转音与灵活性 10 分钟</option>
           <option value="ear">听唱回声 · 约 6 分钟</option>
         </select>
+        <small>声音正常选“常规20”；疲劳但说话正常选“轻柔”；专项只在常规后轮换。</small>
       </label>
 
       <label>
@@ -51,6 +52,7 @@ const ceilingNotes = [
           <option value="bottle" selected>有练声瓶</option>
           <option value="no-bottle">无练声瓶 · 唇颤音 / vv</option>
         </select>
+        <small>有设备且按说明装好就选有瓶；没带设备直接选无瓶。</small>
       </label>
 
       <label>
@@ -58,6 +60,7 @@ const ceilingNotes = [
         <select data-start-note>
           {startNotes.map(([midi, label]) => <option value={midi} selected={midi === 48}>{label}</option>)}
         </select>
+        <small>选能用小音量轻哼 3 次、既不压低也不抬高的音；不确定先试听 C3。</small>
       </label>
 
       <label>
@@ -65,6 +68,7 @@ const ceilingNotes = [
         <select data-ceiling-note>
           {ceilingNotes.map(([midi, label]) => <option value={midi} selected={midi === 64}>{label}</option>)}
         </select>
+        <small>选能稳定重复的最高音，不选偶尔碰到的最高音；当前先从 E4 开始。</small>
       </label>
 
       <label>
@@ -74,12 +78,15 @@ const ceilingNotes = [
           <option value="72" selected>72 BPM · 默认</option>
           <option value="84">84 BPM · 已熟悉</option>
         </select>
+        <small>新音型或状态一般用60；正常用72；84只给已经唱清楚的转音。</small>
       </label>
     </div>
 
     <div class="vocal-player__actions">
       <button type="button" data-play>开始自动跟练</button>
       <button type="button" data-stop disabled>停止</button>
+      <button type="button" data-preview-start>试听起音</button>
+      <button type="button" data-preview-ceiling>试听天花板</button>
     </div>
 
     <div class="vocal-player__status" aria-live="polite">
@@ -122,30 +129,30 @@ const ceilingNotes = [
   const ROUTINES = {
     daily20: [
       { title: '气流与轻起音', cue: '{sovt}', pattern: [0, 2, 4, 2, 0], span: 6 },
-      { title: '哼鸣与连续音高', cue: 'mm 或 ng', pattern: [0, 2, 4, 5, 7, 5, 4, 2, 0], span: 6 },
-      { title: '元音链', cue: 'i → e → a → o → u', pattern: [0, 0, 0, 0, 0], span: 4 },
-      { title: '头声与换区', cue: 'wu 滑音：钢琴给起点、终点、返回', pattern: [0, 7, 0], span: 7 },
-      { title: '混声与闭合', cue: 'mum', pattern: [0, 4, 7, 4, 0], span: 6 },
-      { title: '转音与灵活性', cue: 'da', pattern: [0, 2, 4, 5, 7, 5, 4, 2, 0], span: 5 },
-      { title: '短旋律听唱', cue: '先听，再用 lu 回唱', pattern: [0, 2, 4, 2, 0], span: 2, echo: true },
+      { title: '哼鸣与连续音高', cue: 'mm（闭嘴“嗯”）或 ng（sing 尾音）', pattern: [0, 2, 4, 5, 7, 5, 4, 2, 0], span: 6 },
+      { title: '元音链', cue: 'i衣 → e诶 → a啊 → o哦 → u乌', pattern: [0, 0, 0, 0, 0], span: 4 },
+      { title: '头声与换区', cue: 'wu（轻“呜”）滑音：钢琴给起点、终点、返回', pattern: [0, 7, 0], span: 7 },
+      { title: '混声与闭合', cue: 'mum（轻“马姆”）', pattern: [0, 4, 7, 4, 0], span: 6 },
+      { title: '转音与灵活性', cue: 'da（轻“哒”）', pattern: [0, 2, 4, 5, 7, 5, 4, 2, 0], span: 5 },
+      { title: '短旋律听唱', cue: '先听，再用 lu（轻“噜/卢”）回唱', pattern: [0, 2, 4, 2, 0], span: 2, echo: true },
     ],
     gentle: [
-      { title: '轻声哼鸣三音', cue: 'mm 或 ng', pattern: [0, 2, 4, 2, 0], span: 6 },
+      { title: '轻声哼鸣三音', cue: 'mm（闭嘴“嗯”）或 ng（sing 尾音）', pattern: [0, 2, 4, 2, 0], span: 6 },
       { title: '半闭合五音', cue: '{sovt}', pattern: [0, 2, 4, 5, 7, 5, 4, 2, 0], span: 7 },
-      { title: '轻声琶音', cue: 'wu', pattern: [0, 4, 7, 4, 0], span: 5 },
+      { title: '轻声琶音', cue: 'wu（轻“呜”）', pattern: [0, 4, 7, 4, 0], span: 5 },
     ],
     head: [
       { title: '半闭合连接', cue: '{sovt}', pattern: [0, 2, 4, 5, 7, 5, 4, 2, 0], span: 6 },
-      { title: '头声滑音', cue: 'wu 滑音：钢琴给起点、终点、返回', pattern: [0, 7, 0], span: 8 },
-      { title: '头声落回中区', cue: 'ng → u', pattern: [0, 4, 7, 4, 0], span: 6 },
+      { title: '头声滑音', cue: 'wu（轻“呜”）滑音：钢琴给起点、终点、返回', pattern: [0, 7, 0], span: 8 },
+      { title: '头声落回中区', cue: 'ng（sing 尾音）→ u（乌）', pattern: [0, 4, 7, 4, 0], span: 6 },
     ],
     mix: [
       { title: '半闭合预备', cue: '{sovt}', pattern: [0, 2, 4, 2, 0], span: 5 },
-      { title: '轻闭合琶音', cue: 'mum', pattern: [0, 4, 7, 4, 0], span: 7 },
-      { title: '换区五音', cue: 'gug', pattern: [0, 2, 4, 5, 7, 5, 4, 2, 0], span: 6 },
+      { title: '轻闭合琶音', cue: 'mum（轻“马姆”）', pattern: [0, 4, 7, 4, 0], span: 7 },
+      { title: '换区五音', cue: 'gug（短“格-啊-格”）', pattern: [0, 2, 4, 5, 7, 5, 4, 2, 0], span: 6 },
     ],
     vowels: [
-      { title: '同音高元音链', cue: 'i → e → a → o → u', pattern: [0, 0, 0, 0, 0], span: 4 },
+      { title: '同音高元音链', cue: 'i衣 → e诶 → a啊 → o哦 → u乌', pattern: [0, 0, 0, 0, 0], span: 4 },
       { title: '元音 i', cue: 'i', pattern: [0, 2, 4, 5, 7, 5, 4, 2, 0], span: 2 },
       { title: '元音 e', cue: 'e', pattern: [0, 2, 4, 5, 7, 5, 4, 2, 0], span: 2 },
       { title: '元音 a', cue: 'a', pattern: [0, 2, 4, 5, 7, 5, 4, 2, 0], span: 2 },
@@ -153,16 +160,16 @@ const ceilingNotes = [
       { title: '元音 u', cue: 'u', pattern: [0, 2, 4, 5, 7, 5, 4, 2, 0], span: 2 },
     ],
     agility: [
-      { title: '五音均匀度', cue: 'da', pattern: [0, 2, 4, 5, 7, 5, 4, 2, 0], span: 5 },
-      { title: '琶音换音', cue: 'ya', pattern: [0, 4, 7, 4, 0], span: 5 },
-      { title: '八度音阶', cue: 'da', pattern: [0, 2, 4, 5, 7, 9, 11, 12, 11, 9, 7, 5, 4, 2, 0], span: 2 },
-      { title: '短旋律回声', cue: 'lu', pattern: [0, 2, 4, 2, 0], span: 2, echo: true },
+      { title: '五音均匀度', cue: 'da（轻“哒”）', pattern: [0, 2, 4, 5, 7, 5, 4, 2, 0], span: 5 },
+      { title: '琶音换音', cue: 'ya（轻“呀”）', pattern: [0, 4, 7, 4, 0], span: 5 },
+      { title: '八度音阶', cue: 'da（轻“哒”）', pattern: [0, 2, 4, 5, 7, 9, 11, 12, 11, 9, 7, 5, 4, 2, 0], span: 2 },
+      { title: '短旋律回声', cue: 'lu（轻“噜/卢”）', pattern: [0, 2, 4, 2, 0], span: 2, echo: true },
     ],
     ear: [
-      { title: '二度回声', cue: 'lu', pattern: [0, 2, 0], span: 3, echo: true },
-      { title: '三度回声', cue: 'lu', pattern: [0, 4, 0], span: 3, echo: true },
-      { title: '五度回声', cue: 'lu', pattern: [0, 7, 0], span: 3, echo: true },
-      { title: '短旋律回声', cue: 'lu', pattern: [0, 2, 4, 2, 0], span: 2, echo: true },
+      { title: '二度回声', cue: 'lu（轻“噜/卢”）', pattern: [0, 2, 0], span: 3, echo: true },
+      { title: '三度回声', cue: 'lu（轻“噜/卢”）', pattern: [0, 4, 0], span: 3, echo: true },
+      { title: '五度回声', cue: 'lu（轻“噜/卢”）', pattern: [0, 7, 0], span: 3, echo: true },
+      { title: '短旋律回声', cue: 'lu（轻“噜/卢”）', pattern: [0, 2, 4, 2, 0], span: 2, echo: true },
     ],
   };
 
@@ -185,6 +192,8 @@ const ceilingNotes = [
       this.bpmSelect = this.querySelector('[data-bpm]');
       this.playButton = this.querySelector('[data-play]');
       this.stopButton = this.querySelector('[data-stop]');
+      this.previewStartButton = this.querySelector('[data-preview-start]');
+      this.previewCeilingButton = this.querySelector('[data-preview-ceiling]');
       this.sectionOutput = this.querySelector('[data-section]');
       this.cueOutput = this.querySelector('[data-cue]');
       this.noteOutput = this.querySelector('[data-note]');
@@ -194,6 +203,8 @@ const ceilingNotes = [
 
       this.playButton?.addEventListener('click', () => this.start());
       this.stopButton?.addEventListener('click', () => this.stop('已停止。下次从舒适音重新开始，不需要补做。'));
+      this.previewStartButton?.addEventListener('click', () => this.previewPitch('start'));
+      this.previewCeilingButton?.addEventListener('click', () => this.previewPitch('ceiling'));
       this.routineSelect?.addEventListener('change', () => this.previewRoutine());
       this.sovtSelect?.addEventListener('change', () => this.previewRoutine());
       this.startSelect?.addEventListener('change', () => this.previewRoutine());
@@ -234,7 +245,7 @@ const ceilingNotes = [
     }
 
     cueFor(section, sovt) {
-      const toolCue = sovt === 'bottle' ? '练声瓶' : '唇颤音；做不到时改 vv';
+      const toolCue = sovt === 'bottle' ? '练声瓶' : '唇颤音；做不到时改 vv（有声 v，像 very 开头）';
       return section.cue.replace('{sovt}', toolCue);
     }
 
@@ -261,6 +272,27 @@ const ceilingNotes = [
         this.masterGain.connect(this.audioContext.destination);
       }
       if (this.audioContext.state === 'suspended') await this.audioContext.resume();
+    }
+
+    async previewPitch(kind) {
+      this.stop('');
+      try {
+        await this.ensureAudio();
+      } catch (error) {
+        this.message.textContent = error instanceof Error ? error.message : '无法启动音频。';
+        return;
+      }
+      const settings = this.getSettings();
+      const midi = kind === 'ceiling' ? settings.ceiling : settings.start;
+      this.sectionOutput.textContent = kind === 'ceiling' ? '试听天花板' : '试听起音';
+      this.cueOutput.textContent = '只轻哼一次，不做能力测试';
+      this.noteOutput.textContent = this.noteName(midi);
+      this.setDegrees([0], 0);
+      this.schedulePiano(midi, 1.15, 0.17);
+      this.message.textContent = kind === 'ceiling'
+        ? '天花板应当能用中小音量稳定重复，而不是偶尔碰到。需要加音量或抬下巴，就把天花板降低。'
+        : '起音应当接近舒适说话区：既不压低，也不需要抬高或变大声。';
+      window.setTimeout(() => this.setDegrees([0]), 1200);
     }
 
     schedulePiano(midi, durationSeconds, volume = 0.2) {
@@ -508,19 +540,36 @@ const ceilingNotes = [
     color: var(--sl-color-gray-2);
   }
 
+  .vocal-player__controls small {
+    color: var(--sl-color-gray-2);
+    font-size: 0.78rem;
+    font-weight: 500;
+  }
+
   .vocal-player select {
     width: 100%;
     min-height: 2.65rem;
     padding: 0.55rem 0.7rem;
-    color: var(--sl-color-white);
+    color: var(--sl-color-text);
+    -webkit-text-fill-color: currentColor;
     border: 1px solid var(--sl-color-gray-5);
     border-radius: 0.65rem;
-    background: var(--sl-color-bg-nav);
+    background-color: var(--sl-color-bg);
+    color-scheme: light dark;
     font: inherit;
   }
 
-  :root[data-theme='light'] .vocal-player select {
-    color: var(--sl-color-black);
+  .vocal-player option {
+    color: var(--sl-color-text);
+    background-color: var(--sl-color-bg);
+  }
+
+  :global(html[data-theme='light']) .vocal-player select {
+    color-scheme: light;
+  }
+
+  :global(html[data-theme='dark']) .vocal-player select {
+    color-scheme: dark;
   }
 
   .vocal-player__actions {
