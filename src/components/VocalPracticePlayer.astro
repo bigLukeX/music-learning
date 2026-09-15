@@ -35,15 +35,15 @@ const ceilingNotes = [
       <label>
         <span>跟练套餐</span>
         <select data-routine>
-          <option value="daily20" selected>常规练声 · 约 20 分钟</option>
-          <option value="gentle">轻柔恢复 · 约 8 分钟</option>
-          <option value="head">专项 · 头声与换区 10 分钟</option>
-          <option value="mix">专项 · 混声与闭合 10 分钟</option>
-          <option value="vowels">专项 · 元音统一 10 分钟</option>
-          <option value="agility">专项 · 转音与灵活性 10 分钟</option>
-          <option value="ear">听唱回声 · 约 6 分钟</option>
+          <option value="daily20" selected>常规自动音型</option>
+          <option value="gentle">轻柔自动音型</option>
+          <option value="head">专项 · 头声与换区</option>
+          <option value="mix">专项 · 混声与闭合</option>
+          <option value="vowels">专项 · 元音统一</option>
+          <option value="agility">专项 · 转音与灵活性</option>
+          <option value="ear">听唱回声 · 基础音程</option>
         </select>
-        <small>声音正常选“常规20”；疲劳但说话正常选“轻柔”；专项只在常规后轮换。</small>
+        <small>自动音型只是整次练习的一部分。轻柔版仅供身体疲劳、但说话与轻哼正常时使用；嗓音异常就休息。</small>
       </label>
 
       <label>
@@ -60,7 +60,7 @@ const ceilingNotes = [
         <select data-start-note>
           {startNotes.map(([midi, label]) => <option value={midi} selected={midi === 48}>{label}</option>)}
         </select>
-        <small>选能用小音量轻哼 3 次、既不压低也不抬高的音；不确定先试听 C3。</small>
+        <small>选能用小音量轻哼 3 次、既不压低也不抬高的音；不确定可先试听 C3，太低就换音。</small>
       </label>
 
       <label>
@@ -68,7 +68,7 @@ const ceilingNotes = [
         <select data-ceiling-note>
           {ceilingNotes.map(([midi, label]) => <option value={midi} selected={midi === 64}>{label}</option>)}
         </select>
-        <small>选能稳定重复的最高音，不选偶尔碰到的最高音；当前先从 E4 开始。</small>
+        <small>只设当天已知舒适的上限。E4 仅是可调整初值；不因套餐无法开始而提高安全上限。</small>
       </label>
 
       <label>
@@ -81,6 +81,8 @@ const ceilingNotes = [
         <small>新音型或状态一般用60；正常用72；84只给已经唱清楚的转音。</small>
       </label>
     </div>
+
+    <p class="vocal-player__plan" data-plan aria-live="polite">选择设置后显示实际音域与自动播放预计时长。</p>
 
     <div class="vocal-player__actions">
       <button type="button" data-play>开始自动跟练</button>
@@ -149,7 +151,7 @@ const ceilingNotes = [
     mix: [
       { title: '半闭合预备', cue: '{sovt}', pattern: [0, 2, 4, 2, 0], span: 5 },
       { title: '轻闭合琶音', cue: 'mum（轻“马姆”）', pattern: [0, 4, 7, 4, 0], span: 7 },
-      { title: '换区五音', cue: 'gug（短“格-啊-格”）', pattern: [0, 2, 4, 5, 7, 5, 4, 2, 0], span: 6 },
+      { title: '换区五音', cue: 'gug（硬g接元音再收g，一音节）', pattern: [0, 2, 4, 5, 7, 5, 4, 2, 0], span: 6 },
     ],
     vowels: [
       { title: '同音高元音链', cue: 'i衣 → e诶 → a啊 → o哦 → u乌', pattern: [0, 0, 0, 0, 0], span: 4 },
@@ -182,9 +184,14 @@ const ceilingNotes = [
       this.runToken = 0;
       this.completedSteps = 0;
       this.totalSteps = 1;
+      this.isRunning = false;
+      this.isPreviewing = false;
+      this.plan = null;
     }
 
     connectedCallback() {
+      if (this.initialized) { this.previewRoutine(); return; }
+      this.initialized = true;
       this.routineSelect = this.querySelector('[data-routine]');
       this.sovtSelect = this.querySelector('[data-sovt-tool]');
       this.startSelect = this.querySelector('[data-start-note]');
@@ -200,15 +207,15 @@ const ceilingNotes = [
       this.degreeList = this.querySelector('[data-degrees]');
       this.progress = this.querySelector('[data-progress]');
       this.message = this.querySelector('[data-message]');
+      this.planOutput = this.querySelector('[data-plan]');
 
       this.playButton?.addEventListener('click', () => this.start());
       this.stopButton?.addEventListener('click', () => this.stop('已停止。下次从舒适音重新开始，不需要补做。'));
       this.previewStartButton?.addEventListener('click', () => this.previewPitch('start'));
       this.previewCeilingButton?.addEventListener('click', () => this.previewPitch('ceiling'));
-      this.routineSelect?.addEventListener('change', () => this.previewRoutine());
-      this.sovtSelect?.addEventListener('change', () => this.previewRoutine());
-      this.startSelect?.addEventListener('change', () => this.previewRoutine());
-      this.ceilingSelect?.addEventListener('change', () => this.previewRoutine());
+      [this.routineSelect, this.sovtSelect, this.startSelect, this.ceilingSelect, this.bpmSelect].forEach((select) => {
+        select?.addEventListener('change', () => this.handleSettingsChange());
+      });
       this.previewRoutine();
     }
 
@@ -249,17 +256,61 @@ const ceilingNotes = [
       return section.cue.replace('{sovt}', toolCue);
     }
 
-    previewRoutine() {
-      const { routine, start, ceiling } = this.getSettings();
-      const sections = ROUTINES[routine] || ROUTINES.daily20;
-      const invalid = sections.some((section) => this.rootsFor(section, start, ceiling).length === 0);
-      if (invalid) {
-        this.message.textContent = '起音太高或天花板太低：请降低舒适起音，或选择更高的天花板。';
-        this.playButton.disabled = true;
+    getPlan(settings = this.getSettings()) {
+      const sections = ROUTINES[settings.routine] || ROUTINES.daily20;
+      const roots = sections.map((section) => this.rootsFor(section, settings.start, settings.ceiling));
+      if (roots.some((list) => list.length === 0)) return { valid: false, settings, sections, roots };
+      const beats = sections.reduce((sum, section, index) => {
+        // Two count-in beats, the pattern(s), echo gaps, and one final rest beat.
+        const stepBeats = section.echo ? section.pattern.length * 3 + 5 : section.pattern.length + 3;
+        return sum + roots[index].length * stepBeats;
+      }, 0);
+      const highest = Math.max(...sections.map((section, index) =>
+        settings.start + Math.max(...roots[index]) + Math.max(...section.pattern)));
+      const signature = JSON.stringify(sections.map((section, index) =>
+        roots[index].map((offset) => section.pattern.map((interval) => settings.start + offset + interval))));
+      return { valid: true, settings, sections, roots, seconds: beats * 60 / settings.bpm,
+        lowest: settings.start, highest, signature, steps: roots.reduce((sum, list) => sum + list.length, 0) };
+    }
+
+    formatDuration(seconds) {
+      const rounded = Math.round(seconds);
+      return `${Math.floor(rounded / 60)} 分 ${String(rounded % 60).padStart(2, '0')} 秒`;
+    }
+
+    syncButtons() {
+      const busy = this.isRunning || this.isPreviewing;
+      if (this.playButton) this.playButton.disabled = busy || !this.getPlan().valid;
+      if (this.stopButton) this.stopButton.disabled = !busy;
+    }
+
+    handleSettingsChange() {
+      const wasActive = this.isRunning || this.isPreviewing;
+      this.stop('');
+      this.completedSteps = 0;
+      this.totalSteps = 1;
+      this.updateProgress();
+      this.sectionOutput.textContent = wasActive ? '设置已更改 · 等待重启' : '等待开始';
+      this.previewRoutine(wasActive
+        ? '已立即停止旧设置的播放。请按“开始”使用新设置重新跟练。'
+        : '设置已更新；按“开始”后生效。');
+    }
+
+    previewRoutine(prefix = '') {
+      const previous = this.plan;
+      const plan = this.getPlan();
+      this.plan = plan;
+      this.syncButtons();
+      if (!plan.valid) {
+        if (this.planOutput) this.planOutput.textContent = '当前舒适范围容纳不了此套餐的完整音型。';
+        this.message.textContent = `${prefix} 保留舒适上限，改做下方手动三音或单音练习；不要为了启动套餐硬降起音或抬高上限。`;
         return;
       }
-      this.playButton.disabled = false;
-      this.message.textContent = `当前范围：${this.noteName(start)} 起，最高不超过 ${this.noteName(ceiling)}。天花板是停止线，不是必须达到的目标。`;
+      if (this.planOutput) this.planOutput.textContent =
+        `自动播放预计 ${this.formatDuration(plan.seconds)}（含倒数、回唱与间隔）；实际音域 ${this.noteName(plan.lowest)}–${this.noteName(plan.highest)}；设置上限 ${this.noteName(plan.settings.ceiling)}。不含状态检查、额外休息和歌词迁移。`;
+      const unchangedCeiling = previous?.valid && previous.settings.ceiling !== plan.settings.ceiling
+        && previous.signature === plan.signature;
+      this.message.textContent = `${prefix} ${unchangedCeiling ? '这次上限变化没有改变实际音序列。' : ''}各环节只在固定范围内移调；提高天花板不一定提高实际最高音，也不代表通过新音区。`;
     }
 
     async ensureAudio() {
@@ -276,13 +327,17 @@ const ceilingNotes = [
 
     async previewPitch(kind) {
       this.stop('');
+      const token = this.runToken;
+      const settings = this.getSettings();
+      this.isPreviewing = true;
+      this.syncButtons();
       try {
         await this.ensureAudio();
       } catch (error) {
-        this.message.textContent = error instanceof Error ? error.message : '无法启动音频。';
+        if (token === this.runToken) this.stop(error instanceof Error ? error.message : '无法启动音频。');
         return;
       }
-      const settings = this.getSettings();
+      if (token !== this.runToken) return;
       const midi = kind === 'ceiling' ? settings.ceiling : settings.start;
       this.sectionOutput.textContent = kind === 'ceiling' ? '试听天花板' : '试听起音';
       this.cueOutput.textContent = '只轻哼一次，不做能力测试';
@@ -290,9 +345,13 @@ const ceilingNotes = [
       this.setDegrees([0], 0);
       this.schedulePiano(midi, 1.15, 0.17);
       this.message.textContent = kind === 'ceiling'
-        ? '天花板应当能用中小音量稳定重复，而不是偶尔碰到。需要加音量或抬下巴，就把天花板降低。'
-        : '起音应当接近舒适说话区：既不压低，也不需要抬高或变大声。';
-      window.setTimeout(() => this.setDegrees([0]), 1200);
+        ? '需要加音量、抬下巴或挤压，就停止试听并降低上限。'
+        : '起音应当舒适：既不压低，也不需要抬高或变大声。';
+      await this.wait(1200);
+      if (token !== this.runToken) return;
+      this.setDegrees([]);
+      this.isPreviewing = false;
+      this.syncButtons();
     }
 
     schedulePiano(midi, durationSeconds, volume = 0.2) {
@@ -405,32 +464,29 @@ const ceilingNotes = [
     }
 
     async start() {
+      if (this.isRunning) return;
       this.stop('');
       const token = this.runToken;
-      const settings = this.getSettings();
-      const sections = ROUTINES[settings.routine] || ROUTINES.daily20;
-      const rootsBySection = sections.map((section) => this.rootsFor(section, settings.start, settings.ceiling));
-
-      if (rootsBySection.some((roots) => roots.length === 0)) {
-        this.previewRoutine();
-        return;
-      }
-
+      const plan = this.getPlan();
+      if (!plan.valid) { this.previewRoutine(); return; }
+      const { settings, sections, roots: rootsBySection } = plan;
+      this.plan = plan;
+      this.isRunning = true;
+      this.syncButtons();
+      this.completedSteps = 0;
+      this.totalSteps = plan.steps;
+      this.updateProgress();
       try {
         await this.ensureAudio();
       } catch (error) {
-        this.message.textContent = error instanceof Error ? error.message : '无法启动音频。';
+        if (token === this.runToken) this.stop(error instanceof Error ? error.message : '无法启动音频。');
         return;
       }
-
-      this.playButton.disabled = true;
-      this.stopButton.disabled = false;
-      this.completedSteps = 0;
-      this.totalSteps = rootsBySection.reduce((sum, roots) => sum + roots.length, 0);
-      this.updateProgress();
+      if (token !== this.runToken) return;
       const beatMs = 60000 / settings.bpm;
 
       for (let sectionIndex = 0; sectionIndex < sections.length; sectionIndex += 1) {
+        if (token !== this.runToken) return;
         const section = sections[sectionIndex];
         const rootOffsets = rootsBySection[sectionIndex];
         const cue = this.cueFor(section, settings.sovt);
@@ -472,9 +528,9 @@ const ceilingNotes = [
       this.cueOutput.textContent = '正常说一句话并复查';
       this.noteOutput.textContent = '—';
       this.setDegrees([]);
-      this.message.textContent = '结束后声音应与开始前相同或更轻松。若更沙、更紧或说话费力，下次降低音高、音量或缩短时长。';
-      this.playButton.disabled = false;
-      this.stopButton.disabled = true;
+      this.message.textContent = '自动音型已结束，不代表能力通关。正常说一句话；若更沙、更紧或说话费力，今天停止发声并休息，恢复后再按安全页复查。';
+      this.isRunning = false;
+      this.syncButtons();
     }
 
     stop(message) {
@@ -483,9 +539,16 @@ const ceilingNotes = [
         try { source.stop(); } catch {}
       });
       this.activeSources.clear();
-      if (this.playButton) this.playButton.disabled = false;
-      if (this.stopButton) this.stopButton.disabled = true;
-      if (message && this.message) this.message.textContent = message;
+      this.isRunning = false;
+      this.isPreviewing = false;
+      if (this.noteOutput) this.noteOutput.textContent = '—';
+      if (this.cueOutput) this.cueOutput.textContent = '—';
+      this.setDegrees([]);
+      this.syncButtons();
+      if (message && this.message) {
+        this.sectionOutput.textContent = '已停止';
+        this.message.textContent = message;
+      }
     }
   }
 
@@ -655,6 +718,13 @@ const ceilingNotes = [
     height: 0.65rem;
     margin-top: 0.8rem;
     accent-color: var(--music-teal);
+  }
+
+  .vocal-player__plan {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border-left: 3px solid var(--music-teal);
+    font-size: 0.9rem;
   }
 
   .vocal-player__message {

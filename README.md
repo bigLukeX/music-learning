@@ -12,7 +12,7 @@
 - `sources/` 预留给用户明确加入的原始资料，Codex 将其视为只读输入。
 - Neo 课程资料、完整录音与其他附件尚未进入可携带的仓库资料。
 - 吉他日程已适配为每个自然周 3 次正式练习；一个训练周包含 D1–D6，通常跨两个自然周，不要求每天练。
-- 已建立 Astro + Starlight 教程站：65 个页面，包含首页、分组目录、全文搜索与移动端布局；声乐新增浏览器自动钢琴跟练器，五个模块均有基础、首轮课程、综合应用和通关标准。
+- 已建立 Astro + Starlight 教程站：68 个页面，包含首页、分组目录、全文搜索与移动端布局；声乐自动钢琴、共用听觉实验室和原创八小节分析案例已接入；吉他已补第 17 训练周后的作品关卡与模块交接。真实歌曲未核验的数据仍按证据状态记录。
 - 站点已有吉他、声乐、数学物理乐理、歌曲分析和布鲁斯口琴五个独立模块。
 - 已推送到公开仓库 [`bigLukeX/music-learning`](https://github.com/bigLukeX/music-learning)，并部署到 [GitHub Pages 教程站](https://biglukex.github.io/music-learning/)；发布与隐私说明见 [`DEPLOYMENT.md`](DEPLOYMENT.md)。
 
@@ -63,7 +63,7 @@ npm run build
 ├── astro.config.mjs          # 教程标题与侧边目录
 ├── package.json              # Astro / Starlight 构建配置
 ├── src/
-│   ├── content/docs/         # 65 个教程页面
+│   ├── content/docs/         # 68 个教程页面
 │   ├── components/           # 模块卡片、练习卡片与当前任务组件
 │   ├── assets/               # 本地教程插图
 │   └── styles/custom.css     # 全站视觉与响应式样式
@@ -88,3 +88,13 @@ npm run build
 - 不高估当前吉他水平；路线要从真实起点逐步推进。
 - 歌曲文档以结构、练法、和声和演唱处理为主，不保存未授权的完整歌词或乐谱。
 - 新结论区分为：已确认、合理推断、待验证。
+
+## 修改后的验收
+
+```bash
+npm test
+npm run build
+npm run check:links
+```
+
+验证 GitHub Pages 子路径时，用 `GITHUB_ACTIONS=true GITHUB_REPOSITORY=bigLukeX/music-learning npm run build`，随后执行 `TEST_BASE=/music-learning/ npm run check:links`。普通本地构建用默认 `/`。听觉材料与播放器回归不依赖新增 npm 包。

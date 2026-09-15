@@ -1,0 +1,16 @@
+---
+import MobileMenuToggle from '@astrojs/starlight/components/MobileMenuToggle.astro';
+---
+<MobileMenuToggle {...Astro.props} />
+<script>
+  // Keep the focusable button's accessibility state in sync with Starlight's host.
+  // The upstream component continues to own styling, focus trapping and Escape.
+  for (const host of document.querySelectorAll('starlight-menu-button')) {
+    const sync = () => {
+      const button = host.querySelector('button');
+      button?.setAttribute('aria-expanded', host.getAttribute('aria-expanded') || 'false');
+    };
+    sync();
+    new MutationObserver(sync).observe(host, { attributes: true, attributeFilter: ['aria-expanded'] });
+  }
+</script>

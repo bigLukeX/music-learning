@@ -6,13 +6,10 @@ sidebar:
   hidden: true
 hero:
   tagline: 这个音暂时没落在指板上
-  actions:
-    - text: 返回教程首页
-      link: ./
-      variant: primary
-    - text: 查看完整目录
-      link: ./course-outline/
-      variant: secondary
 ---
 
+export const siteRoot = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+
 链接可能已经移动。请从课程目录重新进入对应模块。
+
+<p><a href={siteRoot}>返回教程首页</a> · <a href={`${siteRoot}course-outline/`}>查看完整目录</a></p>

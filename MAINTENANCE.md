@@ -40,7 +40,7 @@ npm run dev
 4. 对具体歌曲、录音版本、调性、速度和课程编号标注“已确认 / 合理推断 / 待验证”。
 5. 中文加粗标签必须写成 `**标签：** 正文`，结束标记后留一个空格；`**标签：**正文` 会被当前 MDX 解析器原样输出星号。
 6. 结构改变后同步 `astro.config.mjs` 侧边栏和 `src/content/docs/course-outline.mdx`。
-7. 运行 `npm run build`，确认所有页面和搜索索引生成。
+7. 运行 `npm test`、`npm run build`、`npm run check:links`，确认音频计划/取消回归、全部页面和搜索索引。模拟 Pages 时用 `GITHUB_ACTIONS=true GITHUB_REPOSITORY=bigLukeX/music-learning npm run build`，随后 `TEST_BASE=/music-learning/ npm run check:links`；工作流也执行这些检查。
 8. 检查 `git diff`，确保没有录音、联系方式、私密进度或临时文件。
 
 ## 发布边界
@@ -53,3 +53,9 @@ npm run dev
 ## 接管后的第一句话
 
 新的 Codex 应能准确复述：当前个人学习停在吉他定位练习 A；课程网站可以继续扩写所有模块，但不能据此跳过个人学习关卡。
+
+## 音源与共享交互
+
+`src/lib/listening-materials.mjs` 是原创 E2-v1、E4-v1、CASE8-v1 的音高/拍值来源，听觉实验和答案共用它。更改材料时同步页面中的固定答案、时长、版本 ID 与回归测试，不把商业歌曲音频或 Neo 原谱放入这个文件。
+
+`AccessibleMenuToggle.astro` 只同步当前 Starlight 移动菜单按钮的辅助技术状态；样式、焦点和 Esc 仍由框架组件处理。升级依赖时复核该适配是否仍需要，不直接改 `node_modules`。

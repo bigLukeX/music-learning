@@ -1,0 +1,131 @@
+---
+const { initialPreset = 'ear-2' } = Astro.props;
+---
+<listening-lab data-initial-preset={initialPreset}>
+  <section class="listening-lab" aria-label="听觉实验播放器">
+    <h2>听觉实验播放器</h2>
+    <p>先听和记录，再展开答案。声音由浏览器生成；调低设备音量后开始。</p>
+    <div class="lab-controls">
+      <label>材料或实验<select data-preset>
+        <optgroup label="原创听辨与案例">
+          <option value="ear-2">E2-v1 · 两小节</option><option value="ear-4">E4-v1 · 四小节</option><option value="case">CASE8-v1 · 八小节完整案例</option>
+        </optgroup>
+        <optgroup label="声音实验"><option value="beats">440 + 442 Hz 拍频</option><option value="fifth-pure">纯五度：220 + 330 Hz</option><option value="fifth-equal">平均律五度：220 + 329.628 Hz</option><option value="center-c">相同白键短句 · C 中心</option><option value="center-a">相同白键短句 · A 中心</option></optgroup>
+        <optgroup label="20 秒持续主音"><option value="drone-c">C3 持续主音</option><option value="drone-a">A2 持续主音</option><option value="drone-e">E2 持续主音</option><option value="drone-f">F2 持续主音</option></optgroup>
+      </select></label>
+      <label>音乐速度<select data-bpm><option value="60">60 BPM</option><option value="72">72 BPM</option><option value="84">84 BPM</option></select></label>
+      <label>音乐移调<select data-transpose><option value="-12">低八度</option><option value="-7">低五度</option><option value="-5">低四度</option><option value="0" selected>原音区</option><option value="5">高四度</option><option value="7">高五度</option><option value="12">高八度</option></select></label>
+      <label>听辨方式<select data-echo><option value="yes">示范 → 留空回唱 → 核对</option><option value="no">仅示范一遍</option></select></label>
+      <label>案例声部<select data-part><option value="full">合奏 A · 持续和弦</option><option value="melody">只听旋律</option><option value="bass">只听低音</option><option value="harmony">只听和弦</option><option value="arranged">合奏 B · 分解和弦</option></select></label>
+    </div>
+    <p data-settings-note>音乐速度和移调仅用于原创乐句；频率实验保持固定参数。</p>
+    <div class="lab-actions"><button type="button" data-start>播放</button><button type="button" data-stop disabled>停止</button></div>
+    <p data-status role="status" aria-live="polite">等待开始</p>
+    <p data-info></p>
+    <progress data-progress max="100" value="0" aria-label="实验播放进度"></progress>
+    <details data-answer><summary>完成记录后，展开音名与拍值答案</summary><ol data-answer-list></ol></details>
+    <noscript>启用 JavaScript 后可播放；页面下方仍有文字练习和答案。</noscript>
+  </section>
+</listening-lab>
+<script>
+  import { makeTimeline } from '../lib/listening-materials.mjs';
+  class ListeningLab extends HTMLElement {
+    connectedCallback() {
+      if (this.abort) return;
+      this.abort = new AbortController(); this.sources = new Set(); this.token = (this.token || 0) + 1;
+      this.selects = [...this.querySelectorAll('select')];
+      this.preset = this.querySelector('[data-preset]');
+      this.preset.value = this.dataset.initialPreset || 'ear-2';
+      this.startButton = this.querySelector('[data-start]'); this.stopButton = this.querySelector('[data-stop]');
+      this.status = this.querySelector('[data-status]'); this.info = this.querySelector('[data-info]');
+      this.progress = this.querySelector('[data-progress]'); this.answer = this.querySelector('[data-answer]');
+      this.startButton.addEventListener('click', () => this.start(), { signal: this.abort.signal });
+      this.stopButton.addEventListener('click', () => this.stop('已停止。'), { signal: this.abort.signal });
+      for (const select of this.selects) select.addEventListener('change', () => { this.stop('设置已改变，请重新播放。'); this.preview(); }, { signal: this.abort.signal });
+      document.addEventListener('visibilitychange', () => { if (document.hidden) this.stop('页面已离开，播放已停止。'); }, { signal: this.abort.signal });
+      window.addEventListener('music-lab-start', e => { if (e.detail !== this) this.stop('已切换到另一个播放器。'); }, { signal: this.abort.signal });
+      this.preview();
+    }
+    disconnectedCallback() { this.stop(''); this.abort?.abort(); this.abort = null; this.context?.close(); this.context = null; }
+    settings() {
+      return { preset: this.preset.value, bpm: Number(this.querySelector('[data-bpm]').value), transpose: Number(this.querySelector('[data-transpose]').value), echo: this.querySelector('[data-echo]').value === 'yes', part: this.querySelector('[data-part]').value };
+    }
+    preview() {
+      const settings = this.settings();
+      const musical = settings.preset.startsWith('ear-') || settings.preset === 'case';
+      this.querySelector('[data-bpm]').disabled = !musical;
+      this.querySelector('[data-transpose]').disabled = !musical;
+      this.querySelector('[data-echo]').disabled = !settings.preset.startsWith('ear-');
+      this.querySelector('[data-part]').disabled = settings.preset !== 'case';
+      const timeline = makeTimeline(settings);
+      this.info.textContent = `${timeline.info} 本次约 ${Math.ceil(timeline.duration)} 秒。`;
+      this.answer.open = false; this.answer.hidden = !timeline.answer;
+      const list = this.querySelector('[data-answer-list]'); list.replaceChildren();
+      for (const text of timeline.answer || []) { const item = document.createElement('li'); item.textContent = text; list.append(item); }
+    }
+    schedule(event, base) {
+      const at = base + event.at, end = at + event.duration;
+      const voices = event.rich ? [[1, 1], [2, 0.35], [3, 0.22]] : [[1, 1]];
+      for (const [harmonic, scale] of voices) {
+        const osc = this.context.createOscillator(), gain = this.context.createGain();
+        osc.type = 'sine'; osc.frequency.value = event.hz * harmonic;
+        gain.gain.setValueAtTime(0, at); gain.gain.linearRampToValueAtTime(event.volume * scale, at + 0.015);
+        gain.gain.setValueAtTime(event.volume * scale, Math.max(at + 0.016, end - 0.025)); gain.gain.linearRampToValueAtTime(0, end);
+        osc.connect(gain); gain.connect(this.master); osc.start(at); osc.stop(end + 0.02);
+        this.sources.add(osc); osc.onended = () => { this.sources.delete(osc); osc.disconnect(); gain.disconnect(); };
+      }
+    }
+    async start() {
+      this.stop(''); const token = this.token;
+      this.startButton.disabled = true; this.stopButton.disabled = false;
+      const timeline = makeTimeline(this.settings());
+      try {
+        const Audio = window.AudioContext || window.webkitAudioContext;
+        if (!Audio) throw new Error('当前浏览器不支持音频，请使用页面的文字练习。');
+        if (!this.context) { this.context = new Audio(); this.master = this.context.createGain(); this.master.gain.value = 0.45; this.master.connect(this.context.destination); }
+        if (this.context.state === 'suspended') await this.context.resume();
+        if (token !== this.token) return;
+        window.dispatchEvent(new CustomEvent('music-lab-start', { detail: this }));
+        const base = this.context.currentTime + 0.08;
+        for (const event of timeline.events) this.schedule(event, base);
+        this.timer = window.setInterval(() => {
+          if (token !== this.token) return;
+          const elapsed = Math.max(0, this.context.currentTime - base);
+          const phase = [...timeline.phases].reverse().find(p => p.at <= elapsed);
+          this.status.textContent = `${phase?.label || '准备'} · ${Math.min(Math.floor(elapsed), Math.ceil(timeline.duration))}/${Math.ceil(timeline.duration)} 秒`;
+          this.progress.value = Math.min(100, elapsed / timeline.duration * 100);
+          if (elapsed >= timeline.duration) { this.stop('已完成。先核对自己的记录，再决定是否重复。'); this.progress.value = 100; }
+        }, 100);
+      } catch (error) { if (token === this.token) this.stop(error instanceof Error ? error.message : '无法播放。'); }
+    }
+    stop(message) {
+      this.token = (this.token || 0) + 1; window.clearInterval(this.timer);
+      for (const source of this.sources || []) { try { source.stop(); } catch {} }
+      this.sources?.clear();
+      if (this.startButton) this.startButton.disabled = false;
+      if (this.stopButton) this.stopButton.disabled = true;
+      if (this.progress) this.progress.value = 0;
+      if (message && this.status) this.status.textContent = message;
+    }
+  }
+  if (!customElements.get('listening-lab')) customElements.define('listening-lab', ListeningLab);
+</script>
+<style>
+  .listening-lab { margin: 1.5rem 0; padding: 1.2rem; border: 1px solid var(--sl-color-gray-4); border-radius: 1rem; background: color-mix(in srgb, var(--music-teal) 5%, var(--sl-color-bg)); }
+  .lab-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 1rem; }
+  label { display: grid; gap: .4rem; font-weight: 650; }
+  select, button { font: inherit; color: var(--sl-color-text); background: var(--sl-color-bg); border: 1px solid var(--sl-color-gray-4); border-radius: .5rem; padding: .65rem; max-width: 100%; }
+  select { width: 100%; color-scheme: light dark; }
+  option, optgroup { color: var(--sl-color-text); background: var(--sl-color-bg); }
+  button { cursor: pointer; }
+  button[data-start] { background: var(--music-gold); color: #17130c; font-weight: 700; }
+  button:disabled, select:disabled { opacity: .55; cursor: default; }
+  .lab-actions { display: flex; gap: .75rem; margin: 1rem 0; flex-wrap: wrap; }
+  progress { width: 100%; accent-color: var(--music-teal); }
+  details { margin-top: 1rem; }
+  summary { cursor: pointer; font-weight: 650; }
+  [data-status] { min-height: 2rem; font-weight: 700; }
+  [data-settings-note] { font-size: .85rem; }
+  :global(:root[data-theme='light']) select { color-scheme: light; }
+  :global(:root[data-theme='dark']) select { color-scheme: dark; }
+</style>

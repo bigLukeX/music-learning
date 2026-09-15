@@ -15,6 +15,7 @@ export default defineConfig({
       tagline: '听见、理解、演奏，再变成自己的音乐。',
       favicon: '/favicon.svg',
       customCss: ['/src/styles/custom.css'],
+      components: { MobileMenuToggle: './src/components/AccessibleMenuToggle.astro' },
       lastUpdated: true,
       disable404Route: true,
       tableOfContents: {
@@ -30,7 +31,7 @@ export default defineConfig({
       sidebar: [
         {
           label: '从这里开始',
-          items: ['course-outline', 'start-here', 'practice-and-progress', 'sources-and-evidence'],
+          items: ['course-outline', 'start-here', 'practice-and-progress', 'listening-lab', 'sources-and-evidence'],
         },
         {
           label: '吉他 · 当前主线',
@@ -46,6 +47,7 @@ export default defineConfig({
             'guitar/fretboard',
             'guitar/harmony',
             'guitar/stage-b-weeks-9-16',
+            'guitar/post-16-gates',
             'guitar/ear-and-transcription',
             'guitar/acoustic-and-electric',
             'guitar/tone-and-signal-chain',
@@ -90,6 +92,7 @@ export default defineConfig({
             'songs',
             'songs/evidence-and-versioning',
             'songs/workflow',
+            'songs/worked-example',
             'songs/transcription-lab',
             'songs/arrangement-lab',
             'songs/recording-review',

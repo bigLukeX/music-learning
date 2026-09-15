@@ -1,4 +1,6 @@
 ---
+interface Props { mode?: 'syllables' | 'english'; }
+const { mode = 'syllables' } = Astro.props;
 const syllables = [
   {
     code: 'mm / mmm',
@@ -26,16 +28,16 @@ const syllables = [
   },
   {
     code: 'mum',
-    chinese: '接近英文“马姆”，中间元音很短',
-    action: '两端的 m 轻轻闭唇，中间像英语 mum 的短元音；不要唱成很开的“妈——”。',
+    chinese: '英语 mum：轻 m 接元音，再收 m',
+    action: '两端的 m 轻轻闭唇，中间取英语 mum 的元音音色；练长音时延长中间元音，最后才轻收 m，不唱成夸张张口的“妈”。',
     use: '轻闭合、混声连接、琶音',
     speech: 'mum',
     listen: '听 mum',
   },
   {
     code: 'gug',
-    chinese: '接近“格-啊-格”的短音',
-    action: '两个 g 都短而轻，中间是短元音；不要用舌根和喉咙猛撞。',
+    chinese: '硬 g 接短“啊”音色再收 g，合成一音节',
+    action: '两个 g 都短而轻，元音承担时值；不要拆成三个汉字音节，不用舌根和喉咙猛撞。',
     use: '清楚起音、混声与换区五音',
     speech: 'gug',
     listen: '听 gug',
@@ -47,6 +49,31 @@ const syllables = [
     use: '无练声瓶时的半闭合替代',
     speech: 'very',
     listen: '听 very 开头',
+  },
+  {
+    code: 'zz', chinese: '英语 zoo 开头的有声 z',
+    action: '舌尖靠近上齿龈，留细小气流缝隙并发声；保持 z，不加“滋”的元音，也不咬牙。',
+    use: '四拍连续发声；与 vv 二选一', speech: 'zoo', listen: '听 zoo 开头',
+  },
+  {
+    code: 'noo', chinese: '轻“努”，延长乌的元音',
+    action: 'n 在音头轻触，随后张开通向 u；不逐音用下巴点头。',
+    use: '轻起音短型', speech: 'noo', listen: '听 noo',
+  },
+  {
+    code: 'vee', chinese: '有声 v 接“衣”',
+    action: '先用上牙轻碰下唇发 v，再接 i；开头不是汉语的 w。',
+    use: '从 vv 迁移到元音', speech: 'vee', listen: '听 vee',
+  },
+  {
+    code: 'no', chinese: '英语 no，轻“挪”',
+    action: 'n 轻而短，后面由 o 的元音承担时值；不模仿汉语声调升降。',
+    use: '轻起音的备选音节', speech: 'no', listen: '听 no',
+  },
+  {
+    code: 'gee（硬 g） / ghee', chinese: '硬 g 接“衣”',
+    action: '舌后部轻触后马上放开接 i；这里取英语 ghee 的硬 g，不读字母 G；做起来费力就用 mum。',
+    use: '轻起音备选，不额外撞击舌根', speech: 'ghee', listen: '听 ghee',
   },
   {
     code: 'da / dah',
@@ -81,18 +108,27 @@ const syllables = [
     listen: '听元音顺序',
   },
 ];
+const sentences = [
+  { code: 'Take a little time with me.', chinese: '和我一起慢一点，留一点时间。',
+    action: '先听整句读法，再按正文的八分网格安排音节；说话示意没有锁定节拍器速度。',
+    use: '重读骨架与 time 的双元音', speech: 'Take a little time with me.', listen: '听第一句读法' },
+  { code: 'Let the morning carry you.', chinese: '让清晨带着你前行。',
+    action: '听 morning、carry 的第一音节，再回到节奏表；不把每个音节都说成一样重。',
+    use: '词内重音和弱读 the', speech: 'Let the morning carry you.', listen: '听第二句读法' },
+];
+const items = mode === 'english' ? sentences : syllables;
 ---
 
-<vocal-syllable-guide>
-  <section class="syllable-guide" aria-labelledby="syllable-guide-title">
+<vocal-syllable-guide id={mode === 'english' ? 'english-reading' : 'syllables'}>
+  <section class="syllable-guide" aria-labelledby={`syllable-guide-title-${mode}`}>
     <div class="syllable-guide__heading">
-      <span>先听发音，再跟钢琴</span>
-      <h2 id="syllable-guide-title">练声音节字典</h2>
-      <p>点击只会播放慢速发音示意，不是专业真人范唱。听懂音节后，再回到自动钢琴按目标音高跟唱。</p>
+      <span>{mode === 'english' ? '原创句子的读法参考' : '先听发音，再跟钢琴'}</span>
+      <h2 id={`syllable-guide-title-${mode}`}>{mode === 'english' ? '试听句子读法' : '练声音节字典'}</h2>
+      <p>点击播放浏览器的慢速读法示意；不同设备声音可能不同。这不是真人范唱，也不示范声乐动作或固定歌曲节奏。</p>
     </div>
 
     <div class="syllable-guide__grid">
-      {syllables.map((item) => (
+      {items.map((item) => (
         <article>
           <div class="syllable-guide__name">
             <code>{item.code}</code>
@@ -105,7 +141,7 @@ const syllables = [
       ))}
     </div>
 
-    <p class="syllable-guide__status" data-speech-status aria-live="polite">选择一个音节试听；浏览器声音只负责示意读法。</p>
+    <p class="syllable-guide__status" data-speech-status aria-live="polite">选择一项试听；浏览器声音只负责示意读法。</p>
   </section>
 </vocal-syllable-guide>
 
@@ -119,15 +155,17 @@ const syllables = [
     }
 
     disconnectedCallback() {
+      this.speechToken = (this.speechToken || 0) + 1;
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     }
 
     speak(button) {
       if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
-        this.status.textContent = '当前浏览器不支持语音播放；请按卡片中的中文近似读法练习。';
+        this.status.textContent = '当前浏览器不支持语音播放；请参考卡片与正文的读法说明。';
         return;
       }
 
+      const token = this.speechToken = (this.speechToken || 0) + 1;
       const text = button.dataset.speech;
       const label = button.dataset.label;
       window.speechSynthesis.cancel();
@@ -135,16 +173,21 @@ const syllables = [
       utterance.lang = 'en-US';
       utterance.rate = 0.62;
       utterance.pitch = 1;
-      const voice = window.speechSynthesis.getVoices().find((candidate) => candidate.lang?.toLowerCase().startsWith('en'));
+      const voices = window.speechSynthesis.getVoices();
+      const voice = voices.find((candidate) => candidate.lang?.toLowerCase() === 'en-us')
+        || voices.find((candidate) => candidate.lang?.toLowerCase().startsWith('en'));
       if (voice) utterance.voice = voice;
       utterance.addEventListener('start', () => {
+        if (token !== this.speechToken) return;
         this.status.textContent = `正在播放 ${label} 的发音示意。`;
       });
       utterance.addEventListener('end', () => {
-        this.status.textContent = `已播放 ${label}。现在回到钢琴，只模仿读法，不模仿合成语音的音色。`;
+        if (token !== this.speechToken) return;
+        this.status.textContent = `已播放 ${label}。按正文继续练习；只参考读法，不模仿合成语音的音色。`;
       });
       utterance.addEventListener('error', () => {
-        this.status.textContent = '语音播放失败；请使用卡片中的中文近似读法。';
+        if (token !== this.speechToken) return;
+        this.status.textContent = '语音播放失败；请参考卡片与正文，或用已有词典核对读音。';
       });
       window.speechSynthesis.speak(utterance);
     }
