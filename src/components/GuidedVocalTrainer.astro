@@ -3,6 +3,7 @@ interface Props {
   routine: 'high' | 'soft' | 'ear' | 'english' | 'song';
 }
 const { routine } = Astro.props;
+const usesPitchControls = routine !== 'song';
 const titles = {
   high: '高音 / 换区：跟着做',
   soft: '弱唱 / 动态：跟着做',
@@ -20,7 +21,7 @@ const titles = {
       <p>按一次开始。页面负责给音、倒数、顺序和休息；你只需要跟着当前大字提示做。到检查点再按一个按钮。</p>
     </div>
 
-    <div class="guided-trainer__controls">
+    {usesPitchControls && <div class="guided-trainer__controls">
       <label>
         <span>舒适起音</span>
         <select data-root>
@@ -47,12 +48,12 @@ const titles = {
         </select>
         <small>第一次用这页保持 60 BPM；不要为了“跟上”提高速度。</small>
       </label>
-    </div>
+    </div>}
 
     <div class="guided-trainer__actions">
       <button type="button" data-start>开始这次跟练</button>
       <button type="button" data-stop disabled>停止</button>
-      <button type="button" data-preview>试听起音</button>
+      {usesPitchControls && <button type="button" data-preview>试听起音</button>}
     </div>
 
     <div class="guided-trainer__stage" aria-live="polite">
@@ -220,12 +221,12 @@ const titles = {
 
       this.startButton.addEventListener('click', () => this.start());
       this.stopButton.addEventListener('click', () => this.stop('已停止。下次从当前页面重新开始即可，不需要补做。'));
-      this.previewButton.addEventListener('click', () => this.previewRoot());
+      this.previewButton?.addEventListener('click', () => this.previewRoot());
       this.querySelectorAll('[data-choice]').forEach((button) => {
         button.addEventListener('click', () => this.choose(button.dataset.choice));
       });
       [this.rootSelect, this.bpmSelect].forEach((select) => {
-        select.addEventListener('change', () => {
+        select?.addEventListener('change', () => {
           if (this.isRunning) this.stop('设置已改变。按开始用新设置重新跟练。');
         });
       });
@@ -246,11 +247,11 @@ const titles = {
     }
 
     root() {
-      return Number(this.rootSelect.value || 48);
+      return Number(this.rootSelect?.value || 48);
     }
 
     bpm() {
-      return Number(this.bpmSelect.value || 60);
+      return Number(this.bpmSelect?.value || 60);
     }
 
     beatMs() {
@@ -492,9 +493,9 @@ const titles = {
     syncButtons() {
       this.startButton.disabled = this.isRunning;
       this.stopButton.disabled = !this.isRunning;
-      this.previewButton.disabled = this.isRunning;
-      this.rootSelect.disabled = this.isRunning;
-      this.bpmSelect.disabled = this.isRunning;
+      if (this.previewButton) this.previewButton.disabled = this.isRunning;
+      if (this.rootSelect) this.rootSelect.disabled = this.isRunning;
+      if (this.bpmSelect) this.bpmSelect.disabled = this.isRunning;
     }
 
     updateProgress(index, total) {
