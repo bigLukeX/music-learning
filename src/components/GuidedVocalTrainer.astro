@@ -38,6 +38,9 @@ const titles = {
           <option value="57">A3</option>
           <option value="59">B3</option>
           <option value="60">C4</option>
+          <option value="62">D4</option>
+          <option value="64">E4</option>
+          <option value="65">F4</option>
         </select>
         <small>只决定从哪里开始，不要求把列表唱满。</small>
       </label>
@@ -107,6 +110,9 @@ const titles = {
     high: [
       { id:'high-sovt', title:'半闭合 · 换区五音', focus:'先用阻力小的版本穿过换区，不追加音量', cue:'练声瓶 / 唇颤 / vv', label:'1–2–3–4–5–4–3–2–1', type:'scale', pattern:[0,2,4,5,7,5,4,2,0], bpm:60, span:4, direction:'updown', prep:8, gap:2, response:3, post:6, demo:true },
       { id:'high-wu-12321', title:'轻 wu · 三音连接', focus:'轻、连，不在最高音突然放大', cue:'wu（轻“呜”）', label:'1–2–3–2–1', type:'scale', pattern:[0,2,4,2,0], bpm:60, span:5, direction:'updown', prep:6, gap:2, response:3, post:6, demo:true },
+      { id:'high-fixed-repeat', title:'固定调 ×3 · 换声区稳定', focus:'不继续爬高，专门检查同一个位置能否连续三次接近', cue:'轻 wu；把“舒适起音”调到今天想复测的位置', label:'1–2–3–2–1 × 3（同调）', type:'scale', pattern:[0,2,4,2,0], bpm:60, span:0, direction:'up', repeats:3, repeatGap:5, prep:8, response:3, post:8, demo:true },
+      { id:'high-open-vowel', title:'wu → 啊 · 闭到开元音', focus:'把在闭元音里找到的轻松协调带到更开放的真实歌词元音', cue:'同一调做三遍，逐步从 wu 打开到“啊”', label:'1–2–3–2–1 × 3', type:'scale', pattern:[0,2,4,2,0], bpm:60, span:0, direction:'up', repeats:3, repeatGap:5, prep:8, response:3, post:8, demo:true, roundCues:['第1遍：全程 wu','第2遍：前半 wu，最高音开始转“啊”','第3遍：全程轻“啊”'] },
+      { id:'high-enter-hold-exit', title:'进入 → 停留 → 离开高点', focus:'练真实歌曲里“怎么进高音、待住、再下来”，不是只碰一下最高音', cue:'mum（轻“马姆”）', label:'3–4–5–5–4–3', type:'scale', pattern:[4,5,7,7,5,4], bpm:60, span:3, direction:'updown', prep:8, gap:3, response:3, post:8, demo:true },
       { id:'high-descend', title:'ng → u · 头声落回', focus:'从较轻的上方声音落回中区，别突然砸回胸声', cue:'ng 接“乌”', label:'5–3–1', type:'scale', pattern:[7,4,0], bpm:60, span:4, direction:'updown', prep:6, gap:2, response:3, post:6, demo:true },
       { id:'high-wu-glide', title:'wu · 五度滑音', focus:'把声区连接做成一条线，不唱成台阶', cue:'wu（轻“呜”）', label:'1～～5～～1', type:'glide', interval:7, glideBeats:6, bpm:60, span:5, direction:'updown', prep:6, gap:2, response:3, post:6, demo:true },
       { id:'high-mum-13531', title:'mum · 混声琶音', focus:'跨更宽音程时仍保持轻起音和可重复', cue:'mum（轻“马姆”）', label:'1–3–5–3–1', type:'scale', pattern:[0,4,7,4,0], bpm:60, span:5, direction:'updown', prep:6, gap:2, response:3, post:6, demo:true },
@@ -115,6 +121,7 @@ const titles = {
     soft: [
       { id:'soft-sustain', title:'轻元音 · 4拍长音', focus:'小音量保持清楚音高，不拖成漏气', cue:'wu 或 mum 中间元音', label:'持续4拍 → 休4拍 × 4', type:'sustain', bpm:60, beats:4, restBeats:4, rounds:4, prep:6, post:8 },
       { id:'soft-medium-soft', title:'mum · 中声 → 弱声', focus:'同一音高只缩小一点，不变成耳语', cue:'mum', label:'中声4拍 → 休2拍 → 弱声4拍', type:'dynamic', bpm:60, span:4, direction:'up', prep:6, gap:2, post:8 },
+      { id:'soft-arc', title:'弱 → 中 → 弱 · 动态回程', focus:'证明弱声是可控的动态，而不是一路漏气到消失', cue:'mum 或 wu', label:'弱2拍 → 中2拍 → 弱2拍 → 休4拍', type:'dynamicArc', levels:['弱声','中声','弱声'], levelBeats:[2,2,2], restBeats:4, bpm:60, span:3, direction:'up', prep:8, post:8 },
       { id:'soft-decrescendo', title:'wu · 4拍渐弱', focus:'前半保持，后半稍减，句尾仍有音高', cue:'wu（轻“呜”）', label:'中 · 中 · 弱 · 弱', type:'decrescendo', bpm:60, span:6, direction:'up', prep:6, gap:4, post:8 },
       { id:'soft-vv-u', title:'vv → u · 轻起音', focus:'小音量仍有清楚起音，不靠一大口气', cue:'vv 接“乌”', label:'1–2–3–2–1', type:'scale', pattern:[0,2,4,2,0], bpm:60, span:4, direction:'updown', prep:6, gap:2, response:3, post:6, demo:true },
     ],
@@ -123,12 +130,14 @@ const titles = {
       { id:'ear-131', title:'我一句你一句 · 1–3–1', focus:'记住三度距离，再离开示范回唱', cue:'lu（轻“卢”）', label:'1–3–1', type:'echo', pattern:[0,4,0], bpm:60, span:4, direction:'updown', prep:6, gap:2, response:2, post:4 },
       { id:'ear-151', title:'我一句你一句 · 1–5–1', focus:'扩大到五度；范围不舒服就停在前两条', cue:'lu（轻“卢”）', label:'1–5–1', type:'echo', pattern:[0,7,0], bpm:60, span:4, direction:'updown', prep:6, gap:2, response:2, post:4 },
       { id:'ear-melody', title:'短旋律 · 我一句你一句', focus:'听完整轮廓，再在留空里复现', cue:'lu（轻“卢”）', label:'1–2–3–2–1', type:'echo', pattern:[0,2,4,2,0], bpm:60, span:3, direction:'updown', prep:6, gap:2, response:2, post:4 },
+      { id:'ear-irregular-delay', title:'不规则旋律 · 延迟4拍回唱', focus:'避免靠音阶惯性；听完后安静记住，再独立唱出来并核对', cue:'lu（轻“卢”）', label:'1–3–2–5–3', type:'delayedEcho', pattern:[0,4,2,7,4], bpm:60, span:1, direction:'updown', prep:8, delayBeats:4, verify:true, verifyGap:2, gap:2, post:6 },
     ],
     english: [
       { id:'english-stress', title:'重音骨架 · 两小节', focus:'先只把重音放准，不急着塞满所有音节', cue:'说，不唱', label:'TAKE · LIT · TIME · ME', type:'rhythm', bpm:60, repeats:6, prep:8, gap:2, post:4, tokens:['TAKE','·','LIT','·','TIME','·','ME','—','LET','·','MORN','·','CAR','·','YOU','—'] },
       { id:'english-full', title:'完整音节 · 两小节', focus:'弱音节填进去，但总长度不增加', cue:'说，不唱', label:'TAKE a LIT-tle TIME with ME', type:'rhythm', bpm:60, repeats:6, prep:8, gap:2, post:4, tokens:['TAKE','a','LIT','tle','TIME','with','ME','—','LET','the','MORN','ing','CAR','ry','YOU','—'] },
       { id:'english-one-note', title:'单音吟唱 · 保持语流', focus:'先让英语落进拍子，不同时解决旋律', cue:'同一舒适音轻唱', label:'两小节都保持同音高', type:'rhythmTone', bpm:60, repeats:5, prep:8, gap:2, post:5, tokens:['TAKE','a','LIT','tle','TIME','with','ME','—','LET','the','MORN','ing','CAR','ry','YOU','—'], tones:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] },
       { id:'english-melody', title:'最小旋律 · 保持语流', focus:'音高变化时，文字仍然落在原来的八分格', cue:'轻唱', label:'1 1 2 2 3 2 1 —', type:'rhythmTone', bpm:60, repeats:6, prep:8, gap:2, post:5, tokens:['TAKE','a','LIT','tle','TIME','with','ME','—','LET','the','MORN','ing','CAR','ry','YOU','—'], tones:[0,0,2,2,4,2,0,0,0,0,2,2,4,2,0,0] },
+      { id:'english-pickup', title:'弱起 + 辅音贴边', focus:'练“不是每句都从强拍开始”；长元音先站住，词尾辅音尽量贴近下一个格前', cue:'先说，不唱', label:'· TAKE a LIT tle TIME with ME | and LET the MORN ing CAR ry YOU', type:'rhythm', bpm:60, repeats:6, prep:10, gap:2, post:6, tokens:['·','TAKE','a','LIT','tle','TIME','with','ME','and','LET','the','MORN','ing','CAR','ry','YOU'] },
     ],
     song: [
       { id:'song-vowels', title:'难句 · 先元音后原词', focus:'把同一句从容易发声的版本迁回歌词', cue:'准备一条3–5秒难句', label:'元音2遍 → 原词2遍', type:'manual', prep:8, post:10, phases:[['只唱元音 · 第1遍',6],['休息',12],['只唱元音 · 第2遍',6],['休息',12],['原词 · 第1遍',6],['休息',15],['原词 · 第2遍',6]] },
@@ -234,11 +243,16 @@ const titles = {
       } else if (ex.type === 'dynamic') {
         seconds += roots.length * 12 * beat;
         seconds += Math.max(0, roots.length - 1) * (ex.gap || 2) * beat;
+      } else if (ex.type === 'dynamicArc') {
+        const arcBeats = (ex.levelBeats || []).reduce((sum, value) => sum + value, 0) + (ex.restBeats || 4);
+        seconds += roots.length * arcBeats * beat;
       } else if (ex.type === 'decrescendo') {
         seconds += roots.length * 4 * beat;
         seconds += roots.length * (ex.gap || 4) * beat;
-      } else if (ex.type === 'echo') {
-        seconds += roots.length * (ex.pattern.length * 2 + (ex.response || 2) + (ex.gap || 2)) * beat;
+      } else if (ex.type === 'echo' || ex.type === 'delayedEcho') {
+        const waitBeats = ex.delayBeats ?? ex.response ?? 2;
+        const verifyBeats = ex.verify ? ex.pattern.length + (ex.verifyGap || 0) : 0;
+        seconds += roots.length * (ex.pattern.length * 2 + waitBeats + verifyBeats + (ex.gap || 2)) * beat;
       } else if (ex.type === 'rhythm' || ex.type === 'rhythmTone') {
         seconds += (ex.repeats * 8 + Math.max(0, ex.repeats - 1) * (ex.gap || 2)) * beat;
       } else if (ex.type === 'manual') {
@@ -376,7 +390,12 @@ const titles = {
       const repeats = ex.repeats || 1;
       for (let i = 0; i < roots.length; i += 1) {
         for (let round = 0; round < repeats; round += 1) {
-          this.instructionOutput.textContent = repeats > 1 ? `跟唱 · ${ex.cue} · 第 ${round + 1}/${repeats} 遍` : `跟唱 · ${ex.cue}`;
+          const roundCue = ex.roundCues?.[round];
+          this.instructionOutput.textContent = roundCue
+            ? roundCue
+            : repeats > 1
+              ? `跟唱 · ${ex.cue} · 第 ${round + 1}/${repeats} 遍`
+              : `跟唱 · ${ex.cue}`;
           if (!(await this.playPattern(ex.pattern, roots[i], ex, token, '现在唱'))) return false;
           if (round < repeats - 1 && ex.repeatGap && !(await this.beatGap(ex.repeatGap, ex, token, '同调休息'))) return false;
         }
@@ -470,18 +489,48 @@ const titles = {
       return true;
     }
 
+    async runDynamicArc(ex, token) {
+      const roots = this.rootsFor(ex);
+      const levels = ex.levels || ['弱声','中声','弱声'];
+      const beatsPerLevel = ex.levelBeats || [2,2,2];
+      for (let i = 0; i < roots.length; i += 1) {
+        const root = roots[i];
+        this.scheduleTone(root, 0.6, 0.13);
+        for (let levelIndex = 0; levelIndex < levels.length; levelIndex += 1) {
+          this.phaseOutput.textContent = levels[levelIndex];
+          this.patternOutput.textContent = ex.label;
+          for (let beat = 1; beat <= beatsPerLevel[levelIndex]; beat += 1) {
+            if (token !== this.runToken) return false;
+            this.clockOutput.textContent = `${levels[levelIndex]} · ${beat}/${beatsPerLevel[levelIndex]}拍`;
+            await this.wait(this.beatMs(ex));
+          }
+        }
+        if (!(await this.beatGap(ex.restBeats || 4, ex, token, '休息'))) return false;
+        this.progress.value = Math.round(((i + 1) / roots.length) * 100);
+      }
+      return true;
+    }
+
     async runEcho(ex, token) {
       const roots = this.rootsFor(ex);
       for (let i = 0; i < roots.length; i += 1) {
         this.instructionOutput.textContent = '先听我弹这一句。';
         if (!(await this.playPattern(ex.pattern, roots[i], ex, token, '我一句'))) return false;
-        if (!(await this.beatGap(ex.response || 2, ex, token, '准备回唱'))) return false;
+        const waitBeats = ex.delayBeats ?? ex.response ?? 2;
+        const waitLabel = ex.delayBeats ? '安静记住，不要哼' : '准备回唱';
+        if (!(await this.beatGap(waitBeats, ex, token, waitLabel))) return false;
         this.phaseOutput.textContent = '你一句';
         this.instructionOutput.textContent = `现在用 ${ex.cue} 回唱；钢琴留空。`;
         for (let beat = 0; beat < ex.pattern.length; beat += 1) {
+          if (token !== this.runToken) return false;
           this.clockOutput.textContent = `回唱 ${beat + 1}/${ex.pattern.length}`;
           this.scheduleClick(beat === 0);
           await this.wait(this.beatMs(ex));
+        }
+        if (ex.verify) {
+          if (ex.verifyGap && !(await this.beatGap(ex.verifyGap, ex, token, '准备核对'))) return false;
+          this.instructionOutput.textContent = '现在只听钢琴核对，不要跟着补唱。';
+          if (!(await this.playPattern(ex.pattern, roots[i], ex, token, '核对'))) return false;
         }
         this.progress.value = Math.round(((i + 1) / roots.length) * 100);
         if (!(await this.beatGap(ex.gap || 2, ex, token, i < roots.length - 1 ? '下一调' : '收尾', i < roots.length - 1 ? roots[i + 1] : null))) return false;
@@ -544,8 +593,9 @@ const titles = {
       else if (ex.type === 'sustain') ok = await this.runSustain(ex, token);
       else if (ex.type === 'glide') ok = await this.runGlide(ex, token);
       else if (ex.type === 'dynamic') ok = await this.runDynamic(ex, token, false);
+      else if (ex.type === 'dynamicArc') ok = await this.runDynamicArc(ex, token);
       else if (ex.type === 'decrescendo') ok = await this.runDynamic(ex, token, true);
-      else if (ex.type === 'echo') ok = await this.runEcho(ex, token);
+      else if (ex.type === 'echo' || ex.type === 'delayedEcho') ok = await this.runEcho(ex, token);
       else if (ex.type === 'rhythm') ok = await this.runRhythm(ex, token, false);
       else if (ex.type === 'rhythmTone') ok = await this.runRhythm(ex, token, true);
       else if (ex.type === 'manual') ok = await this.runManual(ex, token);
