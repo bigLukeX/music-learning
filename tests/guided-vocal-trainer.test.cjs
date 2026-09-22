@@ -29,9 +29,9 @@ for (const routine of ['foundation','daily','high','soft','ear','english','song'
 
 for (const card of [
   'foundation-vv','foundation-mum','daily-sovt','daily-hum','daily-agility','daily-octave',
-  'high-sovt','high-wu-glide','high-mum-13531','high-gug',
-  'soft-medium-soft','soft-decrescendo','ear-121','ear-melody',
-  'english-one-note','english-melody','song-vowels','song-layer'
+  'high-sovt','high-wu-glide','high-mum-13531','high-gug','high-fixed-repeat','high-open-vowel','high-enter-hold-exit',
+  'soft-medium-soft','soft-decrescendo','soft-arc','ear-121','ear-melody','ear-irregular-delay',
+  'english-one-note','english-melody','english-pickup','song-vowels','song-layer'
 ]) assert(source.includes(card), 'missing core vocal card: ' + card);
 
 for (const behavior of ['专项短跟练','开始这条','下一条','下一条不会自动开始','准备','换调准备','结束休息']) {
@@ -61,6 +61,29 @@ const sustain = {
 };
 assert.equal(trainer.estimateSeconds(sustain), 44, 'sustain timing estimate drift');
 
+
+const targetedFixed = {
+  type:'scale', pattern:[0,2,4,2,0], bpm:60, span:0, direction:'up',
+  repeats:3, repeatGap:5, prep:8, response:3, post:8, demo:true,
+};
+assert.equal(trainer.rootsFor(targetedFixed).length, 1, 'fixed-area drill must stay on one root');
+assert.equal(trainer.estimateSeconds(targetedFixed), 49, 'fixed-area repeat timing drift');
+
+const dynamicArc = {
+  type:'dynamicArc', levels:['弱声','中声','弱声'], levelBeats:[2,2,2], restBeats:4,
+  bpm:60, span:3, direction:'up', prep:8, post:8,
+};
+assert.equal(trainer.estimateSeconds(dynamicArc), 56, 'weak-medium-weak timing drift');
+
+const delayedEcho = {
+  type:'delayedEcho', pattern:[0,4,2,7,4], bpm:60, span:1, direction:'updown',
+  prep:8, delayBeats:4, verify:true, verifyGap:2, gap:2, post:6,
+};
+assert.equal(trainer.rootsFor(delayedEcho).length, 3);
+assert.equal(trainer.estimateSeconds(delayedEcho), 83, 'delayed irregular echo timing drift');
+assert(source.includes("roundCues:['第1遍：全程 wu'"), 'open-vowel drill lost staged vowel cues');
+assert(source.includes("delayBeats:4"), 'delayed recall lost four-beat memory gap');
+
 const rhythm = {
   type:'rhythm', bpm:60, repeats:6, prep:8, gap:2, post:4,
 };
@@ -78,6 +101,9 @@ console.log(JSON.stringify({
   scaleSeconds:trainer.estimateSeconds(scale),
   repeatedScaleSeconds:trainer.estimateSeconds(repeatedScale),
   sustainSeconds:trainer.estimateSeconds(sustain),
+  fixedRepeatSeconds:trainer.estimateSeconds(targetedFixed),
+  dynamicArcSeconds:trainer.estimateSeconds(dynamicArc),
+  delayedEchoSeconds:trainer.estimateSeconds(delayedEcho),
   rhythmSeconds:trainer.estimateSeconds(rhythm),
   manualSeconds:trainer.estimateSeconds(manual),
 }, null, 2));
