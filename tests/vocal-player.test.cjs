@@ -15,10 +15,10 @@ const Player = classes.get('vocal-practice-player');
 function element(value) {
   return { value: String(value ?? ''), textContent: '', listeners: {}, addEventListener(name, fn) { this.listeners[name] = fn; }, dispatch(name) { assert(this.listeners[name], `Missing ${name} listener`); this.listeners[name](); } };
 }
-function player(routine='daily20', start=48, ceiling=64, bpm=72) {
+function player(routine='daily20', start=48, ceiling=64, bpm=72, mode='learning') {
   const p = new Player();
   const fields = {
-    '[data-routine]': element(routine), '[data-sovt-tool]': element('bottle'),
+    '[data-mode]': element(mode), '[data-routine]': element(routine), '[data-sovt-tool]': element('bottle'),
     '[data-start-note]': element(start), '[data-ceiling-note]': element(ceiling), '[data-bpm]': element(bpm),
   };
   for (const field of ['play','stop','preview-start','preview-ceiling','section','cue','note','degrees','progress','message','plan']) fields[`[data-${field}]`] = element();
@@ -47,6 +47,17 @@ async function main() {
     assert.equal(Math.min(...p.notes.map(n=>n.midi)), expected.lowest);
     durations[routine] = +expected.seconds.toFixed(3);
   }
+  // Learning mode must demonstrate the first ordinary pattern once before the first sing-through.
+  const learn=player('daily20',48,64,72,'learning');
+  await learn.start();
+  assert.deepEqual(
+    learn.notes.slice(0,5).map(n=>n.midi),
+    learn.notes.slice(5,10).map(n=>n.midi),
+    'learning mode did not preview the first pattern before singing'
+  );
+  const continuous=player('daily20',48,64,72,'continuous');
+  assert(continuous.getPlan().seconds < learn.getPlan().seconds,'continuous mode should be shorter than learning mode');
+
   const changedControls = [['ceilingSelect','60'],['startSelect','50'],['routineSelect','gentle'],['sovtSelect','no-bottle'],['bpmSelect','60']];
   for (const [field, value] of changedControls) {
     const p = player(); let waits=0, countAtChange=-1, stoppedSource=0;

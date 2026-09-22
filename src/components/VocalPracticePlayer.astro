@@ -26,12 +26,21 @@ const ceilingNotes = [
 <vocal-practice-player>
   <section class="vocal-player" aria-labelledby="vocal-player-title">
     <div class="vocal-player__heading">
-      <span>浏览器自动钢琴</span>
-      <h2 id="vocal-player-title">选好上下限，按一次开始</h2>
-      <p>钢琴会先倒数，再逐个音带唱并自动半音移调；“听唱回声”会先示范、留空给你唱，最后再核对。</p>
+      <span>浏览器跟练钢琴</span>
+      <h2 id="vocal-player-title">默认先听一遍，再倒数跟唱</h2>
+      <p>第一次用保持“学习模式”：每个普通音型先完整示范，再给 4 拍准备后跟唱。熟悉以后才切连续模式。</p>
     </div>
 
     <div class="vocal-player__controls">
+      <label>
+        <span>跟练模式</span>
+        <select data-mode>
+          <option value="learning" selected>学习模式 · 先听 → 4拍准备 → 跟唱</option>
+          <option value="continuous">连续模式 · 已熟悉后使用</option>
+        </select>
+        <small>默认选学习模式。普通音型不会一按就开唱；听唱回声仍按“先听→留空回唱→核对”。</small>
+      </label>
+
       <label>
         <span>跟练套餐</span>
         <select data-routine>
@@ -85,7 +94,7 @@ const ceilingNotes = [
     <p class="vocal-player__plan" data-plan aria-live="polite">选择设置后显示实际音域与自动播放预计时长。</p>
 
     <div class="vocal-player__actions">
-      <button type="button" data-play>开始自动跟练</button>
+      <button type="button" data-play>开始跟练</button>
       <button type="button" data-stop disabled>停止</button>
       <button type="button" data-preview-start>试听起音</button>
       <button type="button" data-preview-ceiling>试听天花板</button>
@@ -192,6 +201,7 @@ const ceilingNotes = [
     connectedCallback() {
       if (this.initialized) { this.previewRoutine(); return; }
       this.initialized = true;
+      this.modeSelect = this.querySelector('[data-mode]');
       this.routineSelect = this.querySelector('[data-routine]');
       this.sovtSelect = this.querySelector('[data-sovt-tool]');
       this.startSelect = this.querySelector('[data-start-note]');
@@ -213,7 +223,7 @@ const ceilingNotes = [
       this.stopButton?.addEventListener('click', () => this.stop('已停止。下次从舒适音重新开始，不需要补做。'));
       this.previewStartButton?.addEventListener('click', () => this.previewPitch('start'));
       this.previewCeilingButton?.addEventListener('click', () => this.previewPitch('ceiling'));
-      [this.routineSelect, this.sovtSelect, this.startSelect, this.ceilingSelect, this.bpmSelect].forEach((select) => {
+      [this.modeSelect, this.routineSelect, this.sovtSelect, this.startSelect, this.ceilingSelect, this.bpmSelect].forEach((select) => {
         select?.addEventListener('change', () => this.handleSettingsChange());
       });
       this.previewRoutine();
@@ -234,6 +244,7 @@ const ceilingNotes = [
 
     getSettings() {
       return {
+        mode: this.modeSelect?.value || 'learning',
         routine: this.routineSelect?.value || 'daily20',
         sovt: this.sovtSelect?.value || 'bottle',
         start: Number(this.startSelect?.value || 48),
@@ -261,9 +272,16 @@ const ceilingNotes = [
       const roots = sections.map((section) => this.rootsFor(section, settings.start, settings.ceiling));
       if (roots.some((list) => list.length === 0)) return { valid: false, settings, sections, roots };
       const beats = sections.reduce((sum, section, index) => {
-        // Two count-in beats, the pattern(s), echo gaps, and one final rest beat.
-        const stepBeats = section.echo ? section.pattern.length * 3 + 5 : section.pattern.length + 3;
-        return sum + roots[index].length * stepBeats;
+        // Echo keeps listen -> response -> verify. Learning mode gives ordinary patterns a full preview plus a four-beat count-in.
+        if (section.echo) {
+          return sum + roots[index].length * (section.pattern.length * 3 + 5);
+        }
+        if (settings.mode === 'learning') {
+          // Preview a new pattern once per section; then sing each transposition.
+          // The first root gets four preparation beats, later roots get two.
+          return sum + (roots[index].length + 1) * (section.pattern.length + 3);
+        }
+        return sum + roots[index].length * (section.pattern.length + 3);
       }, 0);
       const highest = Math.max(...sections.map((section, index) =>
         settings.start + Math.max(...roots[index]) + Math.max(...section.pattern)));
@@ -307,7 +325,7 @@ const ceilingNotes = [
         return;
       }
       if (this.planOutput) this.planOutput.textContent =
-        `自动播放预计 ${this.formatDuration(plan.seconds)}（含倒数、回唱与间隔）；实际音域 ${this.noteName(plan.lowest)}–${this.noteName(plan.highest)}；设置上限 ${this.noteName(plan.settings.ceiling)}。不含状态检查、额外休息和歌词迁移。`;
+        `自动播放预计 ${this.formatDuration(plan.seconds)}（${plan.settings.mode === 'learning' ? '学习模式：每个新音型先试听一次，首调4拍准备' : '连续模式：含倒数、回唱与间隔'}）；实际音域 ${this.noteName(plan.lowest)}–${this.noteName(plan.highest)}；设置上限 ${this.noteName(plan.settings.ceiling)}。不含状态检查、额外休息和歌词迁移。`;
       const unchangedCeiling = previous?.valid && previous.settings.ceiling !== plan.settings.ceiling
         && previous.signature === plan.signature;
       this.message.textContent = `${prefix} ${unchangedCeiling ? '这次上限变化没有改变实际音序列。' : ''}各环节只在固定范围内移调；提高天花板不一定提高实际最高音，也不代表通过新音区。`;
@@ -427,13 +445,14 @@ const ceilingNotes = [
       this.progress.textContent = `${percent}%`;
     }
 
-    async countIn(beatMs, token) {
-      for (let count = 0; count < 2; count += 1) {
+    async countIn(beatMs, token, beats = 2) {
+      for (let count = beats; count > 0; count -= 1) {
         if (token !== this.runToken) return false;
-        this.noteOutput.textContent = count === 0 ? '准备' : '吸气';
-        this.scheduleClick(count === 0);
+        this.noteOutput.textContent = `准备 ${count}`;
+        this.scheduleClick(count === beats);
         await this.wait(beatMs);
       }
+      this.noteOutput.textContent = '现在唱';
       return token === this.runToken;
     }
 
@@ -493,16 +512,16 @@ const ceilingNotes = [
         this.sectionOutput.textContent = `${sectionIndex + 1}/${sections.length} · ${section.title}`;
         this.cueOutput.textContent = cue;
 
-        for (const offset of rootOffsets) {
+        for (let rootIndex = 0; rootIndex < rootOffsets.length; rootIndex += 1) {
           if (token !== this.runToken) return;
+          const offset = rootOffsets[rootIndex];
           const rootMidi = settings.start + offset;
           this.message.textContent = section.echo
             ? `先听钢琴示范，再在留空阶段从 ${this.noteName(rootMidi)} 回唱。`
             : `跟着钢琴用「${cue}」轻声唱；根音 ${this.noteName(rootMidi)}。`;
 
-          if (!(await this.countIn(beatMs, token))) return;
-
           if (section.echo) {
+            if (!(await this.countIn(beatMs, token, 2))) return;
             this.sectionOutput.textContent = `${sectionIndex + 1}/${sections.length} · 先听`;
             if (!(await this.playPattern(section, rootMidi, beatMs, token))) return;
             await this.wait(beatMs);
@@ -513,8 +532,22 @@ const ceilingNotes = [
             if (token !== this.runToken) return;
             this.sectionOutput.textContent = `${sectionIndex + 1}/${sections.length} · 核对`;
             if (!(await this.playPattern(section, rootMidi, beatMs, token))) return;
-          } else if (!(await this.playPattern(section, rootMidi, beatMs, token))) {
-            return;
+          } else if (settings.mode === 'learning') {
+            if (rootIndex === 0) {
+              this.sectionOutput.textContent = `${sectionIndex + 1}/${sections.length} · 新音型先听，不唱`;
+              this.message.textContent = `先只听「${cue}」这一条音型；只示范这一遍，之后同音型直接移调跟唱。`;
+              if (!(await this.playPattern(section, rootMidi, beatMs, token))) return;
+              await this.wait(beatMs);
+              if (token !== this.runToken) return;
+            }
+            this.sectionOutput.textContent = `${sectionIndex + 1}/${sections.length} · 准备跟唱`;
+            if (!(await this.countIn(beatMs, token, rootIndex === 0 ? 4 : 2))) return;
+            this.sectionOutput.textContent = `${sectionIndex + 1}/${sections.length} · 现在跟唱`;
+            this.message.textContent = `现在用「${cue}」跟钢琴唱；根音 ${this.noteName(rootMidi)}。`;
+            if (!(await this.playPattern(section, rootMidi, beatMs, token))) return;
+          } else {
+            if (!(await this.countIn(beatMs, token, 2))) return;
+            if (!(await this.playPattern(section, rootMidi, beatMs, token))) return;
           }
 
           this.completedSteps += 1;
