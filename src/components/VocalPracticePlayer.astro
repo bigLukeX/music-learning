@@ -273,12 +273,15 @@ const ceilingNotes = [
       if (roots.some((list) => list.length === 0)) return { valid: false, settings, sections, roots };
       const beats = sections.reduce((sum, section, index) => {
         // Echo keeps listen -> response -> verify. Learning mode gives ordinary patterns a full preview plus a four-beat count-in.
-        const stepBeats = section.echo
-          ? section.pattern.length * 3 + 5
-          : settings.mode === 'learning'
-            ? section.pattern.length * 2 + 6
-            : section.pattern.length + 3;
-        return sum + roots[index].length * stepBeats;
+        if (section.echo) {
+          return sum + roots[index].length * (section.pattern.length * 3 + 5);
+        }
+        if (settings.mode === 'learning') {
+          // Preview a new pattern once per section; then sing each transposition.
+          // The first root gets four preparation beats, later roots get two.
+          return sum + (roots[index].length + 1) * (section.pattern.length + 3);
+        }
+        return sum + roots[index].length * (section.pattern.length + 3);
       }, 0);
       const highest = Math.max(...sections.map((section, index) =>
         settings.start + Math.max(...roots[index]) + Math.max(...section.pattern)));
@@ -322,7 +325,7 @@ const ceilingNotes = [
         return;
       }
       if (this.planOutput) this.planOutput.textContent =
-        `自动播放预计 ${this.formatDuration(plan.seconds)}（${plan.settings.mode === 'learning' ? '学习模式：普通音型含完整试听与4拍准备' : '连续模式：含倒数、回唱与间隔'}）；实际音域 ${this.noteName(plan.lowest)}–${this.noteName(plan.highest)}；设置上限 ${this.noteName(plan.settings.ceiling)}。不含状态检查、额外休息和歌词迁移。`;
+        `自动播放预计 ${this.formatDuration(plan.seconds)}（${plan.settings.mode === 'learning' ? '学习模式：每个新音型先试听一次，首调4拍准备' : '连续模式：含倒数、回唱与间隔'}）；实际音域 ${this.noteName(plan.lowest)}–${this.noteName(plan.highest)}；设置上限 ${this.noteName(plan.settings.ceiling)}。不含状态检查、额外休息和歌词迁移。`;
       const unchangedCeiling = previous?.valid && previous.settings.ceiling !== plan.settings.ceiling
         && previous.signature === plan.signature;
       this.message.textContent = `${prefix} ${unchangedCeiling ? '这次上限变化没有改变实际音序列。' : ''}各环节只在固定范围内移调；提高天花板不一定提高实际最高音，也不代表通过新音区。`;
@@ -509,8 +512,9 @@ const ceilingNotes = [
         this.sectionOutput.textContent = `${sectionIndex + 1}/${sections.length} · ${section.title}`;
         this.cueOutput.textContent = cue;
 
-        for (const offset of rootOffsets) {
+        for (let rootIndex = 0; rootIndex < rootOffsets.length; rootIndex += 1) {
           if (token !== this.runToken) return;
+          const offset = rootOffsets[rootIndex];
           const rootMidi = settings.start + offset;
           this.message.textContent = section.echo
             ? `先听钢琴示范，再在留空阶段从 ${this.noteName(rootMidi)} 回唱。`
@@ -529,13 +533,15 @@ const ceilingNotes = [
             this.sectionOutput.textContent = `${sectionIndex + 1}/${sections.length} · 核对`;
             if (!(await this.playPattern(section, rootMidi, beatMs, token))) return;
           } else if (settings.mode === 'learning') {
-            this.sectionOutput.textContent = `${sectionIndex + 1}/${sections.length} · 先听，不唱`;
-            this.message.textContent = `先只听「${cue}」这一条音型；示范结束后会给 4 拍准备。`;
-            if (!(await this.playPattern(section, rootMidi, beatMs, token))) return;
-            await this.wait(beatMs);
-            if (token !== this.runToken) return;
+            if (rootIndex === 0) {
+              this.sectionOutput.textContent = `${sectionIndex + 1}/${sections.length} · 新音型先听，不唱`;
+              this.message.textContent = `先只听「${cue}」这一条音型；只示范这一遍，之后同音型直接移调跟唱。`;
+              if (!(await this.playPattern(section, rootMidi, beatMs, token))) return;
+              await this.wait(beatMs);
+              if (token !== this.runToken) return;
+            }
             this.sectionOutput.textContent = `${sectionIndex + 1}/${sections.length} · 准备跟唱`;
-            if (!(await this.countIn(beatMs, token, 4))) return;
+            if (!(await this.countIn(beatMs, token, rootIndex === 0 ? 4 : 2))) return;
             this.sectionOutput.textContent = `${sectionIndex + 1}/${sections.length} · 现在跟唱`;
             this.message.textContent = `现在用「${cue}」跟钢琴唱；根音 ${this.noteName(rootMidi)}。`;
             if (!(await this.playPattern(section, rootMidi, beatMs, token))) return;
