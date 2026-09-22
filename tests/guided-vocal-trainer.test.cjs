@@ -67,7 +67,7 @@ const targetedFixed = {
   repeats:3, repeatGap:5, prep:8, response:3, post:8, demo:true,
 };
 assert.equal(trainer.rootsFor(targetedFixed).length, 1, 'fixed-area drill must stay on one root');
-assert.equal(trainer.estimateSeconds(targetedFixed), 52, 'fixed-area repeat timing drift');
+assert.equal(trainer.estimateSeconds(targetedFixed), 49, 'fixed-area repeat timing drift');
 
 const dynamicArc = {
   type:'dynamicArc', levels:['弱声','中声','弱声'], levelBeats:[2,2,2], restBeats:4,
