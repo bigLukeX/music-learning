@@ -215,7 +215,7 @@ const titles = {
       } else if (ex.type === 'echo') {
         seconds += roots.length * (ex.pattern.length * 2 + (ex.response || 2) + (ex.gap || 2)) * beat;
       } else if (ex.type === 'rhythm' || ex.type === 'rhythmTone') {
-        seconds += ex.repeats * (8 + (ex.gap || 2)) * beat;
+        seconds += (ex.repeats * 8 + Math.max(0, ex.repeats - 1) * (ex.gap || 2)) * beat;
       } else if (ex.type === 'manual') {
         seconds += ex.phases.reduce((sum, phase) => sum + phase[1], 0);
       }
@@ -483,7 +483,7 @@ const titles = {
       this.noteOutput.textContent = `预计 ${this.formatDuration(this.estimateSeconds(ex))}；单条内部会自己走完。`;
 
       const token = this.runToken;
-      if (ex.type !== 'manual' && ex.type !== 'rhythm') {
+      if (ex.type !== 'manual') {
         try { await this.ensureAudio(); }
         catch (error) { if (token === this.runToken) this.stop(error instanceof Error ? error.message : '无法启动音频。'); return; }
       }
