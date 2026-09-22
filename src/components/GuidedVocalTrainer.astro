@@ -5,23 +5,23 @@ interface Props {
 const { routine } = Astro.props;
 const usesPitchControls = routine !== 'song';
 const titles = {
-  high: '高音 / 换区：跟着做',
-  soft: '弱唱 / 动态：跟着做',
-  ear: '音准 / 听唱：跟着做',
-  english: '英文节奏：跟着做',
-  song: '歌曲落地：跟着做',
+  high: '高音 / 换区专项',
+  soft: '弱唱 / 动态专项',
+  ear: '音准 / 听唱专项',
+  english: '英文节奏专项',
+  song: '歌曲落地专项',
 };
 ---
 
 <guided-vocal-trainer data-routine={routine}>
-  <section class="guided-trainer" aria-labelledby={`guided-trainer-${routine}`}>
-    <div class="guided-trainer__heading">
-      <span>无脑跟练模式</span>
-      <h2 id={`guided-trainer-${routine}`}>{titles[routine]}</h2>
-      <p>按一次开始。页面负责给音、倒数、顺序和休息；你只需要跟着当前大字提示做。到检查点再按一个按钮。</p>
+  <section class="exercise-deck" aria-labelledby={`exercise-deck-${routine}`}>
+    <div class="exercise-deck__heading">
+      <span>专项短跟练</span>
+      <h2 id={`exercise-deck-${routine}`}>{titles[routine]}</h2>
+      <p>每条练习约 1–2 分钟。点一条后连续做完；条与条之间由你决定什么时候开始。每条自己留好准备、移调和结束休息，不会突然冲进下一项。</p>
     </div>
 
-    {usesPitchControls && <div class="guided-trainer__controls">
+    {usesPitchControls && <div class="exercise-deck__controls">
       <label>
         <span>舒适起音</span>
         <select data-root>
@@ -37,44 +37,48 @@ const titles = {
           <option value="59">B3</option>
           <option value="60">C4</option>
         </select>
-        <small>只选今天能小音量轻松发出的音。高音训练也从舒服位置开始。</small>
+        <small>只决定从哪里开始，不要求把列表唱满。</small>
       </label>
       <label>
-        <span>速度</span>
-        <select data-bpm>
-          <option value="50">50 BPM · 更慢</option>
-          <option value="60" selected>60 BPM · 默认</option>
-          <option value="72">72 BPM · 熟悉后</option>
+        <span>当天上限</span>
+        <select data-ceiling>
+          <option value="60">C4</option>
+          <option value="62">D4</option>
+          <option value="64" selected>E4</option>
+          <option value="65">F4</option>
+          <option value="67">G4</option>
+          <option value="69">A4</option>
         </select>
-        <small>第一次用这页保持 60 BPM；不要为了“跟上”提高速度。</small>
+        <small>用于限制自动移调。上限不是今天必须唱到的目标。</small>
       </label>
     </div>}
 
-    <div class="guided-trainer__actions">
-      <button type="button" data-start>开始这次跟练</button>
-      <button type="button" data-stop disabled>停止</button>
-      {usesPitchControls && <button type="button" data-preview>试听起音</button>}
+    <div class="exercise-deck__list" data-exercise-list></div>
+
+    <div class="exercise-player" data-player hidden>
+      <div class="exercise-player__top">
+        <span data-phase>准备</span>
+        <strong data-title>—</strong>
+      </div>
+      <div class="exercise-player__instruction" data-instruction>—</div>
+      <div class="exercise-player__pattern" data-pattern>—</div>
+      <div class="exercise-player__clock" data-clock>—</div>
+      <progress data-progress max="100" value="0">0%</progress>
+      <button type="button" data-stop>停止这条</button>
     </div>
 
-    <div class="guided-trainer__stage" aria-live="polite">
-      <span data-step>等待开始</span>
-      <strong data-instruction>选好舒适起音，然后按“开始这次跟练”。</strong>
-      <div class="guided-trainer__pattern" data-pattern>—</div>
-      <div class="guided-trainer__timer" data-timer>—</div>
-    </div>
-
-    <div class="guided-trainer__choices" data-choices hidden>
-      <p data-check-text>只判断刚才这组，不评价整堂课。</p>
+    <div class="exercise-finish" data-finish hidden>
+      <strong data-finish-title>这条完成</strong>
+      <p data-finish-text>先缓一下。下一条不会自动开始。</p>
       <div>
-        <button type="button" data-choice="pass">舒服 / 可重复，继续</button>
-        <button type="button" data-choice="repeat">不确定 / 有点吃力，重做</button>
-        <button type="button" data-choice="stop">不舒服，今天停止</button>
+        <button type="button" data-repeat>再来一遍</button>
+        <button type="button" data-next>下一条</button>
+        <button type="button" data-done>今天先到这</button>
       </div>
     </div>
 
-    <progress data-progress max="100" value="0">0%</progress>
-    <p class="guided-trainer__note" data-note>
-      训练器不监听也不评分。疼痛、刺激、沙哑或说话费力时直接停止，不用完成进度条。
+    <p class="exercise-deck__note" data-note>
+      单条练习内部不需要点屏幕。任何疼痛、刺激、沙哑或说话费力都直接停止。
     </p>
   </section>
 </guided-vocal-trainer>
@@ -82,117 +86,32 @@ const titles = {
 <script>
   const NOTE_NAMES = ['C', 'C♯/D♭', 'D', 'D♯/E♭', 'E', 'F', 'F♯/G♭', 'G', 'G♯/A♭', 'A', 'A♯/B♭', 'B'];
 
-  const FLOWS = {
+  const EXERCISES = {
     high: [
-      { type: 'message', title: 'H1 · 先知道今天做什么', text: '今天不自动升调。先把同一个 1–2–3–2–1 唱稳，再进入滑音和歌词。', seconds: 4 },
-      { type: 'listen', title: 'H1 · 只听一遍', text: '先别唱。记住低—高—再高—回来—原点。', pattern: [0, 2, 4, 2, 0] },
-      { type: 'sing', title: 'H1 · 第 1 遍', text: '轻 wu（呜）。4 拍倒数后跟琴，一拍一个音。', pattern: [0, 2, 4, 2, 0] },
-      { type: 'rest', title: '休息', seconds: 5 },
-      { type: 'sing', title: 'H1 · 第 2 遍', text: '同一个调，不升。最高音不要突然变大声。', pattern: [0, 2, 4, 2, 0] },
-      { type: 'rest', title: '休息', seconds: 5 },
-      { type: 'sing', title: 'H1 · 第 3 遍', text: '还是同一个调。只求三遍接近。', pattern: [0, 2, 4, 2, 0] },
-      { type: 'check', title: 'H1 · 检查', text: '最高音没有明显喊、挤、抬下巴，回到低音也正常吗？', restartAt: 1, lowerOnRepeat: true },
-      { type: 'listen', title: 'H2 · 先听端点', text: '钢琴只给 1—3—1 的端点；你等会儿要连续滑过去。', pattern: [0, 4, 0] },
-      { type: 'glide', title: 'H2 · 第 1 轮', text: '轻 wu：2 拍滑上去，2 拍滑回来。不要唱成三个台阶。', pattern: [0, 4, 0] },
-      { type: 'rest', title: '休息', seconds: 4 },
-      { type: 'glide', title: 'H2 · 第 2 轮', text: '保持小音量，连续滑。', pattern: [0, 4, 0] },
-      { type: 'rest', title: '休息', seconds: 4 },
-      { type: 'glide', title: 'H2 · 第 3 轮', text: '最后一轮，不扩大音域。', pattern: [0, 4, 0] },
-      { type: 'check', title: 'H2 · 检查', text: '滑音连续，而且没有靠加音量硬顶吗？', restartAt: 9, lowerOnRepeat: true },
-      { type: 'manual', title: 'H3 · 先说歌词', text: '选一句 3–5 秒、最高音不超过刚才短型的歌词。现在只说节奏，不唱。', seconds: 6 },
-      { type: 'rest', title: '休息', seconds: 10 },
-      { type: 'manual', title: 'H3 · 只唱元音 · 第 1 遍', text: '去掉大部分辅音，只唱承载音高的元音。', seconds: 6 },
-      { type: 'rest', title: '休息', seconds: 10 },
-      { type: 'manual', title: 'H3 · 只唱元音 · 第 2 遍', text: '同一句，不提高音量。', seconds: 6 },
-      { type: 'rest', title: '休息', seconds: 10 },
-      { type: 'manual', title: 'H3 · 原词 · 第 1 遍', text: '把辅音加回来，保持刚才的轻松程度。', seconds: 6 },
-      { type: 'rest', title: '休息', seconds: 10 },
-      { type: 'manual', title: 'H3 · 原词 · 第 2 遍', text: '最后一遍。原词一加就紧，就不要继续。', seconds: 6 },
-      { type: 'check', title: '完成检查', text: '这句歌词能保持舒适，而且练后说话和平时一样吗？', restartAt: 16 },
+      { id:'high-wu-12321', title:'轻 wu · 三音连接', focus:'轻、连，不在最高音突然放大', cue:'wu（轻“呜”）', label:'1–2–3–2–1', type:'scale', pattern:[0,2,4,2,0], bpm:60, span:5, direction:'updown', prep:6, gap:2, response:3, post:6, demo:true },
+      { id:'high-mum-13531', title:'mum · 琶音连接', focus:'跨更宽音程时仍保持轻起音', cue:'mum（轻“马姆”）', label:'1–3–5–3–1', type:'scale', pattern:[0,4,7,4,0], bpm:60, span:5, direction:'updown', prep:6, gap:2, response:3, post:6, demo:true },
+      { id:'high-wu-glide', title:'wu · 五度滑音', focus:'把声区连接做成一条线，不唱成台阶', cue:'wu（轻“呜”）', label:'1～～5～～1', type:'glide', interval:7, glideBeats:6, bpm:60, span:5, direction:'updown', prep:6, gap:2, response:3, post:6, demo:true },
     ],
     soft: [
-      { type: 'message', title: 'W1 · 目标', text: '弱唱不是耳语。今天只练“同一个音高，稍微小一点仍然清楚”。', seconds: 4 },
-      { type: 'listenRoot', title: '听目标音', text: '只听一次。接下来中声和弱声都留在这个音高。' },
-      { type: 'sustain', title: 'W1 · 第 1 对 · 中声', text: 'mum，中等但不大的音量，持续 4 拍。', beats: 4 },
-      { type: 'restBeats', title: '休息 4 拍', beats: 4 },
-      { type: 'sustain', title: 'W1 · 第 1 对 · 稍弱', text: '比刚才小一点，不要变成耳语，持续 4 拍。', beats: 4 },
-      { type: 'restBeats', title: '休息 4 拍', beats: 4 },
-      { type: 'sustain', title: 'W1 · 第 2 对 · 中声', text: '回到刚才的中声，音高不变。', beats: 4 },
-      { type: 'restBeats', title: '休息 4 拍', beats: 4 },
-      { type: 'sustain', title: 'W1 · 第 2 对 · 稍弱', text: '只小一点，保持有明确音高。', beats: 4 },
-      { type: 'restBeats', title: '休息 4 拍', beats: 4 },
-      { type: 'sustain', title: 'W1 · 第 3 对 · 中声', text: '最后一对，中声。', beats: 4 },
-      { type: 'restBeats', title: '休息 4 拍', beats: 4 },
-      { type: 'sustain', title: 'W1 · 第 3 对 · 稍弱', text: '最后一次弱声，不追求最小。', beats: 4 },
-      { type: 'check', title: 'W1 · 检查', text: '弱声仍然有清楚音高，句尾没有散掉吗？', restartAt: 2 },
-      { type: 'decrescendo', title: 'W2 · 渐弱第 1 轮', text: '4 拍：前 2 拍中声，后 2 拍只稍微减弱。', beats: 4 },
-      { type: 'restBeats', title: '休息 4 拍', beats: 4 },
-      { type: 'decrescendo', title: 'W2 · 渐弱第 2 轮', text: '幅度小一点也可以，优先保持音高。', beats: 4 },
-      { type: 'restBeats', title: '休息 4 拍', beats: 4 },
-      { type: 'decrescendo', title: 'W2 · 渐弱第 3 轮', text: '最后一轮。变弱就漏气或掉音，就别再减。', beats: 4 },
-      { type: 'check', title: 'W2 · 检查', text: '渐弱后仍然有音高，句尾没有明显塌下去吗？', restartAt: 14 },
-      { type: 'manual', title: 'W3 · 歌词中声', text: '选一句 3–5 秒舒适歌词，用正常中声唱 1 遍。', seconds: 6 },
-      { type: 'rest', title: '休息', seconds: 15 },
-      { type: 'manual', title: 'W3 · 歌词稍弱', text: '同一句，只比刚才小一点，关键词仍要听得清。', seconds: 6 },
-      { type: 'rest', title: '休息', seconds: 15 },
-      { type: 'manual', title: 'W3 · 再来一对', text: '再做一次中声。', seconds: 6 },
-      { type: 'rest', title: '休息', seconds: 15 },
-      { type: 'manual', title: 'W3 · 再来一对', text: '再做一次稍弱。', seconds: 6 },
-      { type: 'check', title: '完成检查', text: '弱声歌词仍有音高、关键词可懂，而且说话正常吗？', restartAt: 20 },
+      { id:'soft-medium-soft', title:'mum · 中声 → 弱声', focus:'同一音高只缩小一点，不变成耳语', cue:'mum', label:'中声4拍 → 休2拍 → 弱声4拍', type:'dynamic', bpm:60, span:4, direction:'up', prep:6, gap:2, post:8 },
+      { id:'soft-decrescendo', title:'wu · 4拍渐弱', focus:'前半保持，后半稍减，句尾仍有音高', cue:'wu（轻“呜”）', label:'中 · 中 · 弱 · 弱', type:'decrescendo', bpm:60, span:6, direction:'up', prep:6, gap:4, post:8 },
+      { id:'soft-vv-u', title:'vv → u · 轻起音', focus:'小音量仍有清楚起音，不靠一大口气', cue:'vv 接“乌”', label:'1–2–3–2–1', type:'scale', pattern:[0,2,4,2,0], bpm:60, span:4, direction:'updown', prep:6, gap:2, response:3, post:6, demo:true },
     ],
     ear: [
-      { type: 'message', title: 'E1 · 目标', text: '先听见关系，再唱。每个型都先完整听一遍，不抢着开口。', seconds: 4 },
-      { type: 'listen', title: 'E1 · 1–2–1 · 先听', text: '只听。', pattern: [0, 2, 0] },
-      { type: 'sing', title: 'E1 · 1–2–1 · 回唱', text: '4 拍倒数后，用 lu 回唱。', pattern: [0, 2, 0] },
-      { type: 'restBeats', title: '休息 3 拍', beats: 3 },
-      { type: 'listen', title: 'E1 · 1–3–1 · 先听', text: '只听。', pattern: [0, 4, 0] },
-      { type: 'sing', title: 'E1 · 1–3–1 · 回唱', text: '先在脑子里预听，再开口。', pattern: [0, 4, 0] },
-      { type: 'restBeats', title: '休息 3 拍', beats: 3 },
-      { type: 'listen', title: 'E1 · 1–5–1 · 先听', text: '只听。范围不舒服就直接停止，不为耳训硬唱。', pattern: [0, 7, 0] },
-      { type: 'sing', title: 'E1 · 1–5–1 · 回唱', text: 'lu，一拍一个音。', pattern: [0, 7, 0] },
-      { type: 'check', title: 'E1 · 检查', text: '离开示范后，还能大致回到 1 吗？不确定就重做，不增加音域。', restartAt: 1 },
-      { type: 'message', title: 'E2 · 两小节素材', text: '这一项使用页面下方“听觉练习室”的固定 E2-v1。那里会真正播放素材、留空和给答案；不要用这里的简单音型代替。', seconds: 6 },
-      { type: 'listenRoot', title: 'E3 · 听长音目标', text: '听一次目标音。' },
-      { type: 'sustainSeconds', title: 'E3 · 长音第 1 次', text: '轻元音，5 秒。不要靠加压把句尾顶回去。', seconds: 5 },
-      { type: 'rest', title: '休息', seconds: 10 },
-      { type: 'sustainSeconds', title: 'E3 · 长音第 2 次', text: '仍然 5 秒，音量保持轻。', seconds: 5 },
-      { type: 'rest', title: '休息', seconds: 10 },
-      { type: 'sustainSeconds', title: 'E3 · 长音第 3 次', text: '最后一次。', seconds: 5 },
-      { type: 'check', title: '完成检查', text: '长音开头、中段、结尾都还清楚，而且没有越来越紧吗？', restartAt: 11 },
+      { id:'ear-121', title:'我一句你一句 · 1–2–1', focus:'先完整听，再在同样长度的留空里回唱', cue:'lu（轻“卢”）', label:'1–2–1', type:'echo', pattern:[0,2,0], bpm:60, span:4, direction:'updown', prep:6, gap:2, response:2, post:4 },
+      { id:'ear-131', title:'我一句你一句 · 1–3–1', focus:'记住三度距离，再离开示范回唱', cue:'lu（轻“卢”）', label:'1–3–1', type:'echo', pattern:[0,4,0], bpm:60, span:4, direction:'updown', prep:6, gap:2, response:2, post:4 },
+      { id:'ear-151', title:'我一句你一句 · 1–5–1', focus:'扩大到五度；范围不舒服就停在前两条', cue:'lu（轻“卢”）', label:'1–5–1', type:'echo', pattern:[0,7,0], bpm:60, span:4, direction:'updown', prep:6, gap:2, response:2, post:4 },
+      { id:'ear-melody', title:'短旋律 · 我一句你一句', focus:'听完整轮廓，再在留空里复现', cue:'lu（轻“卢”）', label:'1–2–3–2–1', type:'echo', pattern:[0,2,4,2,0], bpm:60, span:3, direction:'updown', prep:6, gap:2, response:2, post:4 },
     ],
     english: [
-      { type: 'message', title: 'EN-1 · 目标', text: '不用自己数表格。训练器按 60 BPM 的八分格带你走完两小节。', seconds: 4 },
-      { type: 'grid', title: '第 1 层 · 只读重音骨架 · 第 1 遍', text: '只读屏幕出现的大写重音；“·”保持安静。', grid: ['TAKE','·','LIT','·','TIME','·','ME','—','LET','·','MORN','·','CAR','·','YOU','—'] },
-      { type: 'rest', title: '休息', seconds: 5 },
-      { type: 'grid', title: '第 1 层 · 只读重音骨架 · 第 2 遍', text: '再来一次，不增加拍子。', grid: ['TAKE','·','LIT','·','TIME','·','ME','—','LET','·','MORN','·','CAR','·','YOU','—'] },
-      { type: 'rest', title: '休息', seconds: 5 },
-      { type: 'grid', title: '第 2 层 · 补全音节 · 第 1 遍', text: '每一格一个音节；轻音节不要抢拍。', grid: ['TAKE','a','LIT','tle','TIME','with','ME','—','LET','the','MORN','ing','CAR','ry','YOU','—'] },
-      { type: 'rest', title: '休息', seconds: 5 },
-      { type: 'grid', title: '第 2 层 · 补全音节 · 第 2 遍', text: '保持完全相同的两小节长度。', grid: ['TAKE','a','LIT','tle','TIME','with','ME','—','LET','the','MORN','ing','CAR','ry','YOU','—'] },
-      { type: 'rest', title: '休息', seconds: 5 },
-      { type: 'gridTone', title: '第 3 层 · 单音吟唱 · 第 1 遍', text: '所有音节保持同一个舒适音高。', grid: ['TAKE','a','LIT','tle','TIME','with','ME','—','LET','the','MORN','ing','CAR','ry','YOU','—'], pattern: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] },
-      { type: 'rest', title: '休息', seconds: 5 },
-      { type: 'gridTone', title: '第 3 层 · 单音吟唱 · 第 2 遍', text: '别让辅音把拍子撑长。', grid: ['TAKE','a','LIT','tle','TIME','with','ME','—','LET','the','MORN','ing','CAR','ry','YOU','—'], pattern: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] },
-      { type: 'rest', title: '休息', seconds: 5 },
-      { type: 'gridTone', title: '第 4 层 · 最小旋律 · 第 1 遍', text: '保持原来的拍位，只把音高换成 1 1 2 2 3 2 1 —。', grid: ['TAKE','a','LIT','tle','TIME','with','ME','—','LET','the','MORN','ing','CAR','ry','YOU','—'], pattern: [0,0,2,2,4,2,0,0,0,0,2,2,4,2,0,0] },
-      { type: 'rest', title: '休息', seconds: 5 },
-      { type: 'gridTone', title: '第 4 层 · 最小旋律 · 第 2 遍', text: '最后一遍：旋律变化也不要改变文字落点。', grid: ['TAKE','a','LIT','tle','TIME','with','ME','—','LET','the','MORN','ing','CAR','ry','YOU','—'], pattern: [0,0,2,2,4,2,0,0,0,0,2,2,4,2,0,0] },
-      { type: 'check', title: '完成检查', text: '两遍都在同样的两小节里结束，没有因为补词或加旋律拖拍吗？', restartAt: 5 },
+      { id:'english-stress', title:'重音骨架 · 两小节', focus:'先只把重音放准，不急着塞满所有音节', cue:'说，不唱', label:'TAKE · LIT · TIME · ME', type:'rhythm', bpm:60, repeats:6, prep:8, gap:2, post:4, tokens:['TAKE','·','LIT','·','TIME','·','ME','—','LET','·','MORN','·','CAR','·','YOU','—'] },
+      { id:'english-full', title:'完整音节 · 两小节', focus:'弱音节填进去，但总长度不增加', cue:'说，不唱', label:'TAKE a LIT-tle TIME with ME', type:'rhythm', bpm:60, repeats:6, prep:8, gap:2, post:4, tokens:['TAKE','a','LIT','tle','TIME','with','ME','—','LET','the','MORN','ing','CAR','ry','YOU','—'] },
+      { id:'english-melody', title:'最小旋律 · 保持语流', focus:'音高变化时，文字仍然落在原来的八分格', cue:'轻唱', label:'1 1 2 2 3 2 1 —', type:'rhythmTone', bpm:60, repeats:6, prep:8, gap:2, post:5, tokens:['TAKE','a','LIT','tle','TIME','with','ME','—','LET','the','MORN','ing','CAR','ry','YOU','—'], tones:[0,0,2,2,4,2,0,0,0,0,2,2,4,2,0,0] },
     ],
     song: [
-      { type: 'message', title: 'V1 · 准备', text: '准备同一句 3–5 秒难句和同一个伴奏版本。今天只比较两个相邻调，不反复唱整首。', seconds: 6 },
-      { type: 'manual', title: '版本 A · 唱 1 次', text: '用已经知道较舒适的调唱固定难句。', seconds: 8 },
-      { type: 'rest', title: '休息 25 秒', seconds: 25 },
-      { type: 'manual', title: '版本 B · 唱 1 次', text: '换相邻调。若不确定高处是否舒服，只向下移半音比较。', seconds: 8 },
-      { type: 'rest', title: '休息 25 秒', seconds: 25 },
-      { type: 'manual', title: '回听 A / B', text: '现在不要唱。只比较：音高、关键词、句尾、能否重复。不要追原唱音色。', seconds: 20 },
-      { type: 'check', title: '第一次选择', text: '至少有一个版本明显更容易重复吗？没有就重做短句，不扩展到整段。', restartAt: 1 },
-      { type: 'manual', title: '较稳版本 · 再唱 1 次', text: '只唱刚才较稳的那个版本，确认不是偶然。', seconds: 8 },
-      { type: 'rest', title: '休息 25 秒', seconds: 25 },
-      { type: 'manual', title: '接前后两句', text: '用较稳版本把难句接上前后两句。哪一步失稳就退回固定难句。', seconds: 15 },
-      { type: 'rest', title: '休息', seconds: 20 },
-      { type: 'manual', title: '分层迁移', text: '同一段按：说节奏 → 单音 → 元音旋律 → 原词。这里只做一轮，不从头重唱整首。', seconds: 30 },
-      { type: 'check', title: '完成检查', text: '现在有一个可重复的短句方案，而且练后说话正常吗？', restartAt: 7 },
+      { id:'song-vowels', title:'难句 · 先元音后原词', focus:'把同一句从容易发声的版本迁回歌词', cue:'准备一条3–5秒难句', label:'元音2遍 → 原词2遍', type:'manual', prep:8, post:10, phases:[['只唱元音 · 第1遍',6],['休息',12],['只唱元音 · 第2遍',6],['休息',12],['原词 · 第1遍',6],['休息',15],['原词 · 第2遍',6]] },
+      { id:'song-ab', title:'难句 · 相邻调 A/B', focus:'只比较能否重复，不追原唱调', cue:'准备同一句和两个相邻调', label:'A一次 → 休息 → B一次 → 回听', type:'manual', prep:10, post:10, phases:[['版本A · 唱一次',8],['休息',25],['版本B · 唱一次',8],['休息',25],['现在回听A/B',20]] },
+      { id:'song-layer', title:'一句歌词 · 四层迁移', focus:'哪一层开始失稳，就只回退一层', cue:'同一句歌词', label:'说节奏 → 单音 → 元音 → 原词', type:'manual', prep:8, post:10, phases:[['只说节奏',8],['休息',10],['单音吟唱',8],['休息',10],['只唱元音',8],['休息',12],['原词',8]] },
     ],
   };
 
@@ -202,60 +121,127 @@ const titles = {
       this.initialized = true;
       this.routine = this.dataset.routine || 'high';
       this.rootSelect = this.querySelector('[data-root]');
-      this.bpmSelect = this.querySelector('[data-bpm]');
-      this.startButton = this.querySelector('[data-start]');
-      this.stopButton = this.querySelector('[data-stop]');
-      this.previewButton = this.querySelector('[data-preview]');
-      this.stepOutput = this.querySelector('[data-step]');
+      this.ceilingSelect = this.querySelector('[data-ceiling]');
+      this.list = this.querySelector('[data-exercise-list]');
+      this.player = this.querySelector('[data-player]');
+      this.finish = this.querySelector('[data-finish]');
+      this.phaseOutput = this.querySelector('[data-phase]');
+      this.titleOutput = this.querySelector('[data-title]');
       this.instructionOutput = this.querySelector('[data-instruction]');
       this.patternOutput = this.querySelector('[data-pattern]');
-      this.timerOutput = this.querySelector('[data-timer]');
+      this.clockOutput = this.querySelector('[data-clock]');
       this.progress = this.querySelector('[data-progress]');
       this.noteOutput = this.querySelector('[data-note]');
-      this.choices = this.querySelector('[data-choices]');
-      this.checkText = this.querySelector('[data-check-text]');
+      this.finishTitle = this.querySelector('[data-finish-title]');
+      this.finishText = this.querySelector('[data-finish-text]');
+      this.stopButton = this.querySelector('[data-stop]');
+      this.repeatButton = this.querySelector('[data-repeat]');
+      this.nextButton = this.querySelector('[data-next]');
+      this.doneButton = this.querySelector('[data-done]');
       this.runToken = 0;
       this.activeSources = new Set();
-      this.isRunning = false;
-      this.choiceResolver = null;
+      this.activeIndex = -1;
+      this.running = false;
 
-      this.startButton.addEventListener('click', () => this.start());
-      this.stopButton.addEventListener('click', () => this.stop('已停止。下次从当前页面重新开始即可，不需要补做。'));
-      this.previewButton?.addEventListener('click', () => this.previewRoot());
-      this.querySelectorAll('[data-choice]').forEach((button) => {
-        button.addEventListener('click', () => this.choose(button.dataset.choice));
-      });
-      [this.rootSelect, this.bpmSelect].forEach((select) => {
-        select?.addEventListener('change', () => {
-          if (this.isRunning) this.stop('设置已改变。按开始用新设置重新跟练。');
-        });
-      });
-      this.syncButtons();
+      this.stopButton.addEventListener('click', () => this.stop('已停止这条练习。'));
+      this.repeatButton.addEventListener('click', () => this.startExercise(this.activeIndex));
+      this.nextButton.addEventListener('click', () => this.startExercise(Math.min(this.activeIndex + 1, this.exercises().length - 1)));
+      this.doneButton.addEventListener('click', () => this.closePlayer());
+      [this.rootSelect, this.ceilingSelect].forEach((select) => select?.addEventListener('change', () => {
+        if (this.running) this.stop('设置已改变，这条练习已停止。');
+        this.renderCards();
+      }));
+      this.renderCards();
     }
 
-    disconnectedCallback() {
-      this.stop('');
-    }
+    disconnectedCallback() { this.stop(''); }
+
+    exercises() { return EXERCISES[this.routine] || EXERCISES.high; }
+    root() { return Number(this.rootSelect?.value || 48); }
+    ceiling() { return Number(this.ceilingSelect?.value || 64); }
+    beatMs(ex) { return 60000 / (ex.bpm || 60); }
 
     noteName(midi) {
       const octave = Math.floor(midi / 12) - 1;
       return NOTE_NAMES[midi % 12] + octave;
     }
 
-    frequency(midi) {
-      return 440 * Math.pow(2, (midi - 69) / 12);
+    frequency(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
+
+    maxInterval(ex) {
+      if (ex.pattern) return Math.max(...ex.pattern);
+      if (ex.interval) return ex.interval;
+      if (ex.tones) return Math.max(...ex.tones);
+      return 0;
     }
 
-    root() {
-      return Number(this.rootSelect?.value || 48);
+    rootsFor(ex) {
+      if (ex.type === 'rhythm' || ex.type === 'manual') return [this.root()];
+      const available = this.ceiling() - this.root() - this.maxInterval(ex);
+      if (available < 0) return [];
+      const top = Math.min(ex.span || 0, available);
+      const up = Array.from({length: top + 1}, (_, i) => this.root() + i);
+      if (ex.direction === 'updown' && up.length > 1) return [...up, ...up.slice(0, -1).reverse()];
+      return up;
     }
 
-    bpm() {
-      return Number(this.bpmSelect?.value || 60);
+    formatDuration(seconds) {
+      const rounded = Math.round(seconds);
+      const min = Math.floor(rounded / 60);
+      const sec = String(rounded % 60).padStart(2, '0');
+      return min ? `${min}:${sec}` : `0:${sec}`;
     }
 
-    beatMs() {
-      return 60000 / this.bpm();
+    estimateSeconds(ex) {
+      const beat = 60 / (ex.bpm || 60);
+      let seconds = ex.prep || 6;
+      const roots = this.rootsFor(ex);
+      if (!roots.length && ex.type !== 'manual' && ex.type !== 'rhythm') return 0;
+
+      if (ex.type === 'scale') {
+        if (ex.demo) seconds += ex.pattern.length * beat + (ex.response || 3) * beat;
+        seconds += roots.length * ex.pattern.length * beat;
+        seconds += Math.max(0, roots.length - 1) * (ex.gap || 2) * beat;
+      } else if (ex.type === 'glide') {
+        if (ex.demo) seconds += (ex.glideBeats || 6) * beat + (ex.response || 3) * beat;
+        seconds += roots.length * (ex.glideBeats || 6) * beat;
+        seconds += Math.max(0, roots.length - 1) * (ex.gap || 2) * beat;
+      } else if (ex.type === 'dynamic') {
+        seconds += roots.length * 12 * beat;
+        seconds += Math.max(0, roots.length - 1) * (ex.gap || 2) * beat;
+      } else if (ex.type === 'decrescendo') {
+        seconds += roots.length * 4 * beat;
+        seconds += roots.length * (ex.gap || 4) * beat;
+      } else if (ex.type === 'echo') {
+        seconds += roots.length * (ex.pattern.length * 2 + (ex.response || 2) + (ex.gap || 2)) * beat;
+      } else if (ex.type === 'rhythm' || ex.type === 'rhythmTone') {
+        seconds += (ex.repeats * 8 + Math.max(0, ex.repeats - 1) * (ex.gap || 2)) * beat;
+      } else if (ex.type === 'manual') {
+        seconds += ex.phases.reduce((sum, phase) => sum + phase[1], 0);
+      }
+      return seconds + (ex.post || 4);
+    }
+
+    renderCards() {
+      this.list.replaceChildren();
+      this.exercises().forEach((ex, index) => {
+        const card = document.createElement('article');
+        const duration = this.estimateSeconds(ex);
+        const invalid = duration === 0;
+        card.innerHTML = `
+          <div>
+            <span>${ex.cue}</span>
+            <h3>${ex.title}</h3>
+            <p>${ex.focus}</p>
+            <code>${ex.label}</code>
+          </div>
+          <div class="exercise-card__meta">
+            <strong>${invalid ? '当前音域放不下' : '约 ' + this.formatDuration(duration)}</strong>
+            <button type="button" ${invalid ? 'disabled' : ''}>开始这条</button>
+          </div>`;
+        card.querySelector('button')?.addEventListener('click', () => this.startExercise(index));
+        this.list.append(card);
+      });
     }
 
     async ensureAudio() {
@@ -270,485 +256,349 @@ const titles = {
       if (this.audioContext.state === 'suspended') await this.audioContext.resume();
     }
 
-    scheduleTone(midi, durationSeconds = 0.55, volume = 0.18) {
+    scheduleTone(midi, seconds = 0.55, volume = 0.18) {
       if (!this.audioContext || !this.masterGain) return;
       const now = this.audioContext.currentTime + 0.01;
-      const oscillator = this.audioContext.createOscillator();
+      const osc = this.audioContext.createOscillator();
       const gain = this.audioContext.createGain();
-      oscillator.type = 'triangle';
-      oscillator.frequency.value = this.frequency(midi);
+      osc.type = 'triangle';
+      osc.frequency.value = this.frequency(midi);
       gain.gain.setValueAtTime(0.0001, now);
       gain.gain.exponentialRampToValueAtTime(volume, now + 0.015);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + durationSeconds);
-      oscillator.connect(gain);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + seconds);
+      osc.connect(gain);
       gain.connect(this.masterGain);
-      this.activeSources.add(oscillator);
-      oscillator.start(now);
-      oscillator.stop(now + durationSeconds + 0.03);
-      oscillator.addEventListener('ended', () => this.activeSources.delete(oscillator), { once: true });
+      this.activeSources.add(osc);
+      osc.start(now);
+      osc.stop(now + seconds + 0.03);
+      osc.addEventListener('ended', () => this.activeSources.delete(osc), {once:true});
     }
 
     scheduleClick(accent = false) {
       if (!this.audioContext || !this.masterGain) return;
       const now = this.audioContext.currentTime + 0.01;
-      const oscillator = this.audioContext.createOscillator();
+      const osc = this.audioContext.createOscillator();
       const gain = this.audioContext.createGain();
-      oscillator.type = 'sine';
-      oscillator.frequency.value = accent ? 1320 : 900;
+      osc.type = 'sine';
+      osc.frequency.value = accent ? 1320 : 900;
       gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(accent ? 0.11 : 0.065, now + 0.005);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.055);
-      oscillator.connect(gain);
+      gain.gain.exponentialRampToValueAtTime(accent ? 0.1 : 0.06, now + 0.004);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+      osc.connect(gain);
       gain.connect(this.masterGain);
-      this.activeSources.add(oscillator);
-      oscillator.start(now);
-      oscillator.stop(now + 0.06);
-      oscillator.addEventListener('ended', () => this.activeSources.delete(oscillator), { once: true });
+      this.activeSources.add(osc);
+      osc.start(now);
+      osc.stop(now + 0.055);
+      osc.addEventListener('ended', () => this.activeSources.delete(osc), {once:true});
     }
 
-    wait(ms) {
-      return new Promise((resolve) => window.setTimeout(resolve, ms));
-    }
+    wait(ms) { return new Promise((resolve) => window.setTimeout(resolve, ms)); }
 
-    async waitSeconds(seconds, token, prefix) {
-      for (let remaining = seconds; remaining > 0; remaining -= 1) {
+    async secondsCountdown(seconds, token, label) {
+      for (let left = seconds; left > 0; left -= 1) {
         if (token !== this.runToken) return false;
-        this.timerOutput.textContent = (prefix ? prefix + ' · ' : '') + remaining + ' 秒';
+        this.clockOutput.textContent = `${label} · ${left}秒`;
         await this.wait(1000);
       }
-      this.timerOutput.textContent = '继续';
       return token === this.runToken;
     }
 
-    async countIn(token, beats = 4) {
-      for (let count = beats; count > 0; count -= 1) {
+    async beatGap(beats, ex, token, label, nextRoot = null) {
+      for (let left = beats; left > 0; left -= 1) {
         if (token !== this.runToken) return false;
-        this.timerOutput.textContent = '准备 ' + count;
-        this.scheduleClick(count === beats);
-        await this.wait(this.beatMs());
-      }
-      this.timerOutput.textContent = '现在';
-      return token === this.runToken;
-    }
-
-    patternText(pattern) {
-      return pattern.map((interval) => {
-        if (interval === 0) return '1';
-        if (interval === 2) return '2';
-        if (interval === 4) return '3';
-        if (interval === 5) return '4';
-        if (interval === 7) return '5';
-        return '+' + interval;
-      }).join('  ');
-    }
-
-    async playPattern(pattern, token) {
-      this.patternOutput.textContent = this.patternText(pattern);
-      for (const interval of pattern) {
-        if (token !== this.runToken) return false;
-        const midi = this.root() + interval;
-        this.timerOutput.textContent = this.noteName(midi);
-        this.scheduleTone(midi, this.beatMs() * 0.8 / 1000);
-        await this.wait(this.beatMs());
+        this.phaseOutput.textContent = label;
+        this.clockOutput.textContent = `${left}拍`;
+        if (left === beats && nextRoot !== null) this.scheduleTone(nextRoot, 0.55, 0.13);
+        else this.scheduleClick(left === beats);
+        await this.wait(this.beatMs(ex));
       }
       return token === this.runToken;
     }
 
-    async runGrid(step, token, withTone) {
-      if (!(await this.countIn(token, 4))) return false;
-      const halfBeat = this.beatMs() / 2;
-      for (let i = 0; i < step.grid.length; i += 1) {
+    async playPattern(pattern, root, ex, token, phase) {
+      this.phaseOutput.textContent = phase;
+      this.patternOutput.textContent = ex.label;
+      for (let i = 0; i < pattern.length; i += 1) {
         if (token !== this.runToken) return false;
-        const tokenText = step.grid[i];
-        this.patternOutput.textContent = tokenText;
-        this.timerOutput.textContent = '第 ' + (Math.floor(i / 8) + 1) + ' 小节 · ' + ((i % 8) + 1) + '/8';
-        this.scheduleClick(i % 2 === 0);
-        if (withTone && tokenText !== '·' && tokenText !== '—') {
-          this.scheduleTone(this.root() + (step.pattern?.[i] || 0), halfBeat * 0.78 / 1000, 0.12);
-        }
-        await this.wait(halfBeat);
+        const midi = root + pattern[i];
+        this.clockOutput.textContent = this.noteName(midi);
+        this.scheduleTone(midi, this.beatMs(ex) * 0.8 / 1000);
+        await this.wait(this.beatMs(ex));
       }
-      this.patternOutput.textContent = '两小节结束';
       return token === this.runToken;
     }
 
-    async runStep(step, token) {
-      this.stepOutput.textContent = step.title || '继续';
-      this.instructionOutput.textContent = step.text || '';
-      this.patternOutput.textContent = step.pattern ? this.patternText(step.pattern) : '—';
-      this.timerOutput.textContent = '—';
-
-      if (step.type === 'message' || step.type === 'manual') {
-        return await this.waitSeconds(step.seconds || 4, token, step.type === 'manual' ? '现在做' : '阅读');
-      }
-
-      if (step.type === 'rest') {
-        return await this.waitSeconds(step.seconds || 5, token, '休息');
-      }
-
-      if (step.type === 'restBeats') {
-        const beats = step.beats || 4;
-        for (let i = beats; i > 0; i -= 1) {
-          if (token !== this.runToken) return false;
-          this.timerOutput.textContent = '休息 ' + i + ' 拍';
-          this.scheduleClick(i === beats);
-          await this.wait(this.beatMs());
-        }
-        return true;
-      }
-
-      if (step.type === 'listenRoot') {
-        this.patternOutput.textContent = this.noteName(this.root());
-        this.scheduleTone(this.root(), 1.1, 0.18);
-        return await this.waitSeconds(2, token, '只听');
-      }
-
-      if (step.type === 'listen') {
-        return await this.playPattern(step.pattern, token);
-      }
-
-      if (step.type === 'sing') {
-        if (!(await this.countIn(token, 4))) return false;
-        return await this.playPattern(step.pattern, token);
-      }
-
-      if (step.type === 'glide') {
-        if (!(await this.countIn(token, 4))) return false;
-        this.patternOutput.textContent = '1 ～～ 3 ～～ 1';
-        this.timerOutput.textContent = '滑上去';
-        this.scheduleTone(this.root(), 0.5, 0.13);
-        await this.wait(this.beatMs() * 2);
+    async prepare(ex, token) {
+      this.phaseOutput.textContent = '准备';
+      this.instructionOutput.textContent = `${ex.cue} · ${ex.focus}`;
+      this.patternOutput.textContent = ex.label;
+      const seconds = ex.prep || 6;
+      for (let left = seconds; left > 0; left -= 1) {
         if (token !== this.runToken) return false;
-        this.timerOutput.textContent = '滑回来';
-        this.scheduleTone(this.root() + 4, 0.5, 0.13);
-        await this.wait(this.beatMs() * 2);
-        if (token !== this.runToken) return false;
-        this.scheduleTone(this.root(), 0.5, 0.13);
-        return true;
+        this.clockOutput.textContent = left > 3 ? `看清音型 · ${left}秒` : `还有 ${left}`;
+        await this.wait(1000);
       }
+      return token === this.runToken;
+    }
 
-      if (step.type === 'sustain' || step.type === 'decrescendo') {
-        if (!(await this.countIn(token, 4))) return false;
-        this.scheduleTone(this.root(), 0.65, 0.13);
-        const beats = step.beats || 4;
-        for (let i = 1; i <= beats; i += 1) {
-          if (token !== this.runToken) return false;
-          this.patternOutput.textContent = step.type === 'decrescendo' && i > 2 ? '稍微减弱' : '保持';
-          this.timerOutput.textContent = i + ' / ' + beats + ' 拍';
-          this.scheduleClick(i === 1);
-          await this.wait(this.beatMs());
-        }
-        return true;
+    async runScale(ex, token) {
+      const roots = this.rootsFor(ex);
+      if (ex.demo) {
+        this.instructionOutput.textContent = '先听一次，不开口。';
+        if (!(await this.playPattern(ex.pattern, roots[0], ex, token, '先听示范'))) return false;
+        if (!(await this.beatGap(ex.response || 3, ex, token, '轮到你'))) return false;
       }
-
-      if (step.type === 'sustainSeconds') {
-        if (!(await this.countIn(token, 4))) return false;
-        this.scheduleTone(this.root(), 0.65, 0.13);
-        return await this.waitSeconds(step.seconds || 5, token, '持续');
+      for (let i = 0; i < roots.length; i += 1) {
+        this.instructionOutput.textContent = `跟唱 · ${ex.cue}`;
+        if (!(await this.playPattern(ex.pattern, roots[i], ex, token, '现在唱'))) return false;
+        this.progress.value = Math.round(((i + 1) / roots.length) * 100);
+        if (i < roots.length - 1 && !(await this.beatGap(ex.gap || 2, ex, token, '换调准备', roots[i + 1]))) return false;
       }
-
-      if (step.type === 'grid') {
-        return await this.runGrid(step, token, false);
-      }
-
-      if (step.type === 'gridTone') {
-        return await this.runGrid(step, token, true);
-      }
-
-      if (step.type === 'check') {
-        this.checkText.textContent = step.text || '刚才这一组怎么样？';
-        this.choices.hidden = false;
-        this.timerOutput.textContent = '等你选择';
-        const choice = await new Promise((resolve) => {
-          this.choiceResolver = resolve;
-        });
-        this.choiceResolver = null;
-        this.choices.hidden = true;
-        if (token !== this.runToken || choice === 'stop') return { stop: true };
-        if (choice === 'repeat') {
-          if (step.lowerOnRepeat) this.lowerRootOneStep();
-          return { restartAt: Number.isInteger(step.restartAt) ? step.restartAt : 0 };
-        }
-        return true;
-      }
-
       return true;
     }
 
-    lowerRootOneStep() {
-      const options = Array.from(this.rootSelect.options);
-      const index = options.findIndex((option) => option.value === this.rootSelect.value);
-      if (index > 0) {
-        this.rootSelect.value = options[index - 1].value;
-        this.noteOutput.textContent = '已自动把起音降到 ' + options[index - 1].textContent + '；重做这一小组。';
-      } else {
-        this.noteOutput.textContent = '已经是列表最低起音。保持舒适，不再向下硬试；必要时今天停止。';
+    async runGlide(ex, token) {
+      const roots = this.rootsFor(ex);
+      const one = async (root, phase) => {
+        this.phaseOutput.textContent = phase;
+        this.patternOutput.textContent = ex.label;
+        const half = (ex.glideBeats || 6) / 2;
+        this.clockOutput.textContent = '滑上去';
+        this.scheduleTone(root, 0.6, 0.13);
+        await this.wait(this.beatMs(ex) * half);
+        if (token !== this.runToken) return false;
+        this.clockOutput.textContent = '滑回来';
+        this.scheduleTone(root + ex.interval, 0.6, 0.13);
+        await this.wait(this.beatMs(ex) * half);
+        return token === this.runToken;
+      };
+      if (ex.demo) {
+        this.instructionOutput.textContent = '钢琴只示意两个端点；你先听长度。';
+        if (!(await one(roots[0], '先听长度'))) return false;
+        if (!(await this.beatGap(ex.response || 3, ex, token, '轮到你'))) return false;
       }
-    }
-
-    choose(choice) {
-      if (this.choiceResolver) this.choiceResolver(choice);
-    }
-
-    syncButtons() {
-      this.startButton.disabled = this.isRunning;
-      this.stopButton.disabled = !this.isRunning;
-      if (this.previewButton) this.previewButton.disabled = this.isRunning;
-      if (this.rootSelect) this.rootSelect.disabled = this.isRunning;
-      if (this.bpmSelect) this.bpmSelect.disabled = this.isRunning;
-    }
-
-    updateProgress(index, total) {
-      const percent = Math.round((index / Math.max(total, 1)) * 100);
-      this.progress.value = percent;
-      this.progress.textContent = percent + '%';
-    }
-
-    async previewRoot() {
-      if (this.isRunning) return;
-      try {
-        await this.ensureAudio();
-      } catch (error) {
-        this.noteOutput.textContent = error instanceof Error ? error.message : '无法播放参考音。';
-        return;
+      for (let i = 0; i < roots.length; i += 1) {
+        this.instructionOutput.textContent = `连续滑音 · ${ex.cue}`;
+        if (!(await one(roots[i], '现在滑'))) return false;
+        this.progress.value = Math.round(((i + 1) / roots.length) * 100);
+        if (i < roots.length - 1 && !(await this.beatGap(ex.gap || 2, ex, token, '换调准备', roots[i + 1]))) return false;
       }
-      this.stepOutput.textContent = '试听起音';
-      this.instructionOutput.textContent = '只轻哼一次。需要压低、抬高或变大声，就换一个更舒服的音。';
-      this.patternOutput.textContent = this.noteName(this.root());
-      this.scheduleTone(this.root(), 1.15, 0.17);
+      return true;
     }
 
-    async start() {
-      if (this.isRunning) return;
+    async runDynamic(ex, token, decrescendo = false) {
+      const roots = this.rootsFor(ex);
+      for (let i = 0; i < roots.length; i += 1) {
+        const root = roots[i];
+        this.scheduleTone(root, 0.6, 0.13);
+        if (decrescendo) {
+          this.phaseOutput.textContent = '现在唱';
+          for (let beat = 1; beat <= 4; beat += 1) {
+            this.patternOutput.textContent = beat <= 2 ? '保持中声' : '稍微减弱';
+            this.clockOutput.textContent = beat + '/4拍';
+            await this.wait(this.beatMs(ex));
+          }
+          if (!(await this.beatGap(ex.gap || 4, ex, token, '休息'))) return false;
+        } else {
+          this.phaseOutput.textContent = '中声';
+          this.patternOutput.textContent = '中声 4拍';
+          for (let beat = 1; beat <= 4; beat += 1) {
+            this.clockOutput.textContent = beat + '/4拍';
+            await this.wait(this.beatMs(ex));
+          }
+          if (!(await this.beatGap(2, ex, token, '休息'))) return false;
+          this.phaseOutput.textContent = '弱声';
+          this.patternOutput.textContent = '弱声 4拍';
+          for (let beat = 1; beat <= 4; beat += 1) {
+            this.clockOutput.textContent = beat + '/4拍';
+            await this.wait(this.beatMs(ex));
+          }
+          if (!(await this.beatGap(2, ex, token, '休息'))) return false;
+          if (i < roots.length - 1 && !(await this.beatGap(ex.gap || 2, ex, token, '换调准备', roots[i + 1]))) return false;
+        }
+        this.progress.value = Math.round(((i + 1) / roots.length) * 100);
+      }
+      return true;
+    }
+
+    async runEcho(ex, token) {
+      const roots = this.rootsFor(ex);
+      for (let i = 0; i < roots.length; i += 1) {
+        this.instructionOutput.textContent = '先听我弹这一句。';
+        if (!(await this.playPattern(ex.pattern, roots[i], ex, token, '我一句'))) return false;
+        if (!(await this.beatGap(ex.response || 2, ex, token, '准备回唱'))) return false;
+        this.phaseOutput.textContent = '你一句';
+        this.instructionOutput.textContent = `现在用 ${ex.cue} 回唱；钢琴留空。`;
+        for (let beat = 0; beat < ex.pattern.length; beat += 1) {
+          this.clockOutput.textContent = `回唱 ${beat + 1}/${ex.pattern.length}`;
+          this.scheduleClick(beat === 0);
+          await this.wait(this.beatMs(ex));
+        }
+        this.progress.value = Math.round(((i + 1) / roots.length) * 100);
+        if (!(await this.beatGap(ex.gap || 2, ex, token, i < roots.length - 1 ? '下一调' : '收尾', i < roots.length - 1 ? roots[i + 1] : null))) return false;
+      }
+      return true;
+    }
+
+    async runRhythm(ex, token, withTone = false) {
+      for (let round = 0; round < ex.repeats; round += 1) {
+        this.phaseOutput.textContent = `第 ${round + 1}/${ex.repeats} 遍`;
+        for (let i = 0; i < ex.tokens.length; i += 1) {
+          if (token !== this.runToken) return false;
+          this.patternOutput.textContent = ex.tokens[i];
+          this.clockOutput.textContent = `第 ${Math.floor(i / 8) + 1} 小节 · ${(i % 8) + 1}/8`;
+          if (i % 2 === 0) this.scheduleClick(i % 8 === 0);
+          if (withTone && ex.tokens[i] !== '·' && ex.tokens[i] !== '—') this.scheduleTone(this.root() + ex.tones[i], this.beatMs(ex) * 0.38 / 1000, 0.11);
+          await this.wait(this.beatMs(ex) / 2);
+        }
+        this.progress.value = Math.round(((round + 1) / ex.repeats) * 100);
+        if (round < ex.repeats - 1 && !(await this.beatGap(ex.gap || 2, ex, token, '下一遍'))) return false;
+      }
+      return true;
+    }
+
+    async runManual(ex, token) {
+      for (let i = 0; i < ex.phases.length; i += 1) {
+        const [label, seconds] = ex.phases[i];
+        this.phaseOutput.textContent = label.includes('休息') ? '休息' : '现在做';
+        this.instructionOutput.textContent = label;
+        this.patternOutput.textContent = ex.label;
+        if (!(await this.secondsCountdown(seconds, token, label))) return false;
+        this.progress.value = Math.round(((i + 1) / ex.phases.length) * 100);
+      }
+      return true;
+    }
+
+    async startExercise(index) {
+      if (this.running) return;
+      const ex = this.exercises()[index];
+      if (!ex || this.estimateSeconds(ex) === 0) return;
       this.stop('');
-      const token = this.runToken;
-      const steps = FLOWS[this.routine] || FLOWS.high;
-      this.isRunning = true;
-      this.syncButtons();
+      this.activeIndex = index;
+      this.running = true;
+      this.player.hidden = false;
+      this.finish.hidden = true;
+      this.titleOutput.textContent = ex.title;
       this.progress.value = 0;
-      this.noteOutput.textContent = '开始后只看上面的大字提示；不要一边唱一边读后面的理论正文。';
+      this.noteOutput.textContent = `预计 ${this.formatDuration(this.estimateSeconds(ex))}；单条内部会自己走完。`;
 
-      try {
-        await this.ensureAudio();
-      } catch (error) {
-        if (token === this.runToken) this.stop(error instanceof Error ? error.message : '无法启动音频。');
-        return;
+      const token = this.runToken;
+      if (ex.type !== 'manual') {
+        try { await this.ensureAudio(); }
+        catch (error) { if (token === this.runToken) this.stop(error instanceof Error ? error.message : '无法启动音频。'); return; }
       }
       if (token !== this.runToken) return;
+      if (!(await this.prepare(ex, token))) return;
 
-      for (let index = 0; index < steps.length; index += 1) {
-        if (token !== this.runToken) return;
-        this.updateProgress(index, steps.length);
-        const result = await this.runStep(steps[index], token);
-        if (token !== this.runToken) return;
-        if (result && typeof result === 'object' && result.stop) {
-          this.stop('已停止。声音不舒服时今天就到这里。');
-          return;
-        }
-        if (result && typeof result === 'object' && Number.isInteger(result.restartAt)) {
-          index = result.restartAt - 1;
-        }
-      }
+      let ok = true;
+      if (ex.type === 'scale') ok = await this.runScale(ex, token);
+      else if (ex.type === 'glide') ok = await this.runGlide(ex, token);
+      else if (ex.type === 'dynamic') ok = await this.runDynamic(ex, token, false);
+      else if (ex.type === 'decrescendo') ok = await this.runDynamic(ex, token, true);
+      else if (ex.type === 'echo') ok = await this.runEcho(ex, token);
+      else if (ex.type === 'rhythm') ok = await this.runRhythm(ex, token, false);
+      else if (ex.type === 'rhythmTone') ok = await this.runRhythm(ex, token, true);
+      else if (ex.type === 'manual') ok = await this.runManual(ex, token);
+      if (!ok || token !== this.runToken) return;
 
-      if (token !== this.runToken) return;
-      this.updateProgress(steps.length, steps.length);
-      this.stepOutput.textContent = '本次完成';
-      this.instructionOutput.textContent = '正常说一句话，和练前比较。没有不适就结束，不追加练习凑时长。';
+      this.phaseOutput.textContent = '结束休息';
+      this.instructionOutput.textContent = '这条已经做完，现在先不唱。';
       this.patternOutput.textContent = '✓';
-      this.timerOutput.textContent = '结束';
-      this.noteOutput.textContent = '完成训练器只表示流程走完，不代表能力通关。下次同条件能复现，才算有效证据。';
-      this.isRunning = false;
-      this.syncButtons();
+      if (!(await this.secondsCountdown(ex.post || 4, token, '休息'))) return;
+      if (token !== this.runToken) return;
+
+      this.running = false;
+      this.player.hidden = true;
+      this.finish.hidden = false;
+      this.finishTitle.textContent = ex.title + ' · 完成';
+      const hasNext = index < this.exercises().length - 1;
+      this.nextButton.disabled = !hasNext;
+      this.finishText.textContent = hasNext
+        ? '下一条不会自动开始。等你呼吸和注意力都准备好，再点“下一条”；下一条还会重新给准备时间。'
+        : '本组专项已经到最后一条。可以结束，也可以重做这一条。';
     }
 
     stop(message) {
       this.runToken += 1;
-      this.activeSources.forEach((source) => {
-        try { source.stop(); } catch {}
-      });
+      this.activeSources.forEach((source) => { try { source.stop(); } catch {} });
       this.activeSources.clear();
-      if (this.choiceResolver) {
-        this.choiceResolver('stop');
-        this.choiceResolver = null;
-      }
-      this.isRunning = false;
-      if (this.choices) this.choices.hidden = true;
-      if (this.initialized) this.syncButtons();
-      if (message && this.noteOutput) {
-        this.stepOutput.textContent = '已停止';
-        this.instructionOutput.textContent = message;
-        this.timerOutput.textContent = '—';
-      }
+      this.running = false;
+      if (this.player) this.player.hidden = true;
+      if (message && this.noteOutput) this.noteOutput.textContent = message;
+    }
+
+    closePlayer() {
+      this.stop('');
+      this.finish.hidden = true;
+      this.noteOutput.textContent = '今天到这里。下一次可以直接从任意单条练习开始。';
     }
   }
 
-  if (!customElements.get('guided-vocal-trainer')) {
-    customElements.define('guided-vocal-trainer', GuidedVocalTrainer);
-  }
+  if (!customElements.get('guided-vocal-trainer')) customElements.define('guided-vocal-trainer', GuidedVocalTrainer);
 </script>
 
 <style>
-  .guided-trainer {
+  .exercise-deck {
     margin: 1.5rem 0 2rem;
     padding: 1.15rem;
     border: 2px solid color-mix(in srgb, var(--music-gold) 55%, transparent);
     border-radius: 1.2rem;
     background: color-mix(in srgb, var(--music-gold) 6%, var(--sl-color-bg));
   }
-
-  .guided-trainer__heading > span {
-    display: inline-flex;
-    padding: 0.25rem 0.6rem;
-    border-radius: 999px;
+  .exercise-deck__heading > span {
+    display: inline-flex; padding: .25rem .6rem; border-radius: 999px;
     background: color-mix(in srgb, var(--music-gold) 18%, transparent);
-    font-size: 0.78rem;
-    font-weight: 850;
+    font-size: .78rem; font-weight: 850;
   }
-
-  .guided-trainer__heading h2 {
-    margin: 0.65rem 0 0.4rem;
+  .exercise-deck__heading h2 { margin: .65rem 0 .4rem; }
+  .exercise-deck__heading p, .exercise-deck__note { color: var(--sl-color-gray-2); }
+  .exercise-deck__controls {
+    display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.8rem; margin-top:1rem;
   }
-
-  .guided-trainer__heading p,
-  .guided-trainer__note {
-    color: var(--sl-color-gray-2);
+  .exercise-deck__controls label { display:grid; gap:.35rem; font-weight:750; }
+  .exercise-deck__controls small { color:var(--sl-color-gray-2); font-size:.78rem; font-weight:500; }
+  .exercise-deck select {
+    min-height:2.65rem; padding:.55rem .7rem; border:1px solid var(--sl-color-gray-5);
+    border-radius:.65rem; background:var(--sl-color-bg); color:var(--sl-color-text); font:inherit;
   }
-
-  .guided-trainer__controls {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.8rem;
-    margin-top: 1rem;
+  .exercise-deck__list { display:grid; gap:.8rem; margin-top:1rem; }
+  .exercise-deck__list article {
+    display:flex; justify-content:space-between; gap:1rem; align-items:center;
+    padding:1rem; border:1px solid var(--sl-color-gray-5); border-radius:.9rem;
+    background:color-mix(in srgb,var(--sl-color-bg) 92%,white);
   }
-
-  .guided-trainer__controls label {
-    display: grid;
-    gap: 0.35rem;
-    font-weight: 750;
+  .exercise-deck__list article span { font-size:.78rem; font-weight:800; color:var(--sl-color-gray-2); }
+  .exercise-deck__list article h3 { margin:.2rem 0; }
+  .exercise-deck__list article p { margin:.2rem 0 .5rem; color:var(--sl-color-gray-2); }
+  .exercise-deck__list article code { font-size:.92rem; }
+  .exercise-card__meta { display:grid; gap:.5rem; min-width:8.5rem; text-align:right; }
+  .exercise-deck button {
+    min-height:2.7rem; padding:.6rem .9rem; border:1px solid color-mix(in srgb,var(--music-teal) 45%,transparent);
+    border-radius:.7rem; background:color-mix(in srgb,var(--music-teal) 10%,var(--sl-color-bg));
+    color:inherit; font:inherit; font-weight:800; cursor:pointer;
   }
-
-  .guided-trainer__controls small {
-    color: var(--sl-color-gray-2);
-    font-size: 0.78rem;
-    font-weight: 500;
+  .exercise-deck button:disabled { opacity:.5; cursor:not-allowed; }
+  .exercise-player, .exercise-finish {
+    margin-top:1rem; padding:1rem; border-radius:1rem; background:color-mix(in srgb,var(--sl-color-bg) 88%,white);
   }
-
-  .guided-trainer select {
-    min-height: 2.65rem;
-    padding: 0.55rem 0.7rem;
-    border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.65rem;
-    background: var(--sl-color-bg);
-    color: var(--sl-color-text);
-    font: inherit;
-  }
-
-  .guided-trainer__actions,
-  .guided-trainer__choices > div {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.65rem;
-    margin: 1rem 0;
-  }
-
-  .guided-trainer button {
-    min-height: 2.7rem;
-    padding: 0.6rem 0.9rem;
-    border: 1px solid color-mix(in srgb, var(--music-teal) 45%, transparent);
-    border-radius: 0.7rem;
-    background: color-mix(in srgb, var(--music-teal) 10%, var(--sl-color-bg));
-    color: inherit;
-    font: inherit;
-    font-weight: 800;
-    cursor: pointer;
-  }
-
-  .guided-trainer__actions button:first-child {
-    background: var(--music-gold);
-    color: #17130c;
-  }
-
-  .guided-trainer button:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-
-  .guided-trainer__stage {
-    min-height: 13rem;
-    padding: 1rem;
-    border-radius: 1rem;
-    background: color-mix(in srgb, var(--sl-color-bg) 88%, white);
-    display: grid;
-    align-content: center;
-    gap: 0.7rem;
-    text-align: center;
-  }
-
-  .guided-trainer__stage > span {
-    color: var(--sl-color-gray-2);
-    font-size: 0.88rem;
-    font-weight: 850;
-  }
-
-  .guided-trainer__stage > strong {
-    font-size: clamp(1.15rem, 3.2vw, 1.6rem);
-    line-height: 1.45;
-  }
-
-  .guided-trainer__pattern {
-    font-family: var(--sl-font-mono);
-    font-size: clamp(1.25rem, 5vw, 2rem);
-    font-weight: 850;
-    letter-spacing: 0.08em;
-  }
-
-  .guided-trainer__timer {
-    min-height: 2rem;
-    color: color-mix(in srgb, var(--music-rust) 82%, currentColor);
-    font-size: 1.05rem;
-    font-weight: 850;
-  }
-
-  .guided-trainer__choices {
-    margin-top: 1rem;
-    padding: 0.9rem;
-    border-radius: 0.9rem;
-    background: color-mix(in srgb, var(--music-teal) 8%, var(--sl-color-bg));
-  }
-
-  .guided-trainer__choices p {
-    margin: 0;
-    font-weight: 750;
-  }
-
-  .guided-trainer progress {
-    width: 100%;
-    height: 0.65rem;
-    margin-top: 0.8rem;
-    accent-color: var(--music-teal);
-  }
-
-  .guided-trainer__note {
-    margin-bottom: 0;
-    font-size: 0.86rem;
-  }
-
-  @media (max-width: 42rem) {
-    .guided-trainer {
-      padding: 0.9rem;
-    }
-
-    .guided-trainer__controls {
-      grid-template-columns: 1fr;
-    }
-
-    .guided-trainer__actions button,
-    .guided-trainer__choices button {
-      flex: 1 1 100%;
-    }
-
-    .guided-trainer__stage {
-      min-height: 15rem;
-    }
+  .exercise-player { min-height:14rem; display:grid; align-content:center; gap:.8rem; text-align:center; }
+  .exercise-player[hidden], .exercise-finish[hidden] { display:none; }
+  .exercise-player__top { display:grid; gap:.25rem; }
+  .exercise-player__top span { color:var(--sl-color-gray-2); font-weight:850; }
+  .exercise-player__top strong { font-size:1.15rem; }
+  .exercise-player__instruction { font-size:clamp(1.05rem,3vw,1.4rem); font-weight:750; }
+  .exercise-player__pattern { font-family:var(--sl-font-mono); font-size:clamp(1.3rem,5vw,2rem); font-weight:850; }
+  .exercise-player__clock { min-height:2rem; color:color-mix(in srgb,var(--music-rust) 82%,currentColor); font-weight:850; }
+  .exercise-player progress { width:100%; height:.65rem; accent-color:var(--music-teal); }
+  .exercise-finish strong { font-size:1.1rem; }
+  .exercise-finish p { color:var(--sl-color-gray-2); }
+  .exercise-finish > div { display:flex; flex-wrap:wrap; gap:.65rem; }
+  .exercise-deck__note { margin-bottom:0; font-size:.86rem; }
+  @media (max-width:42rem) {
+    .exercise-deck { padding:.9rem; }
+    .exercise-deck__controls { grid-template-columns:1fr; }
+    .exercise-deck__list article { display:grid; }
+    .exercise-card__meta { grid-template-columns:1fr 1fr; align-items:center; text-align:left; min-width:0; }
+    .exercise-finish > div button { flex:1 1 100%; }
   }
 </style>
