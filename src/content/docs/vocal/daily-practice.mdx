@@ -1,69 +1,67 @@
 ---
-title: 声乐跟练：点开始就能练
-description: 不用先选练习、认识音名或设置节拍器。默认流程会先示范、再倒数、再带唱。
+title: 声乐跟练：音高和节拍
+description: 已经会练法，准备倒数后直接跟琴唱。无强制示范，无教学打断。
 ---
 
 import GuidedVocalTrainer from '../../../components/GuidedVocalTrainer.astro';
 import VocalSyllableGuide from '../../../components/VocalSyllableGuide.astro';
-
-今天说话正常、没有疼痛或沙哑，再开始；不舒服时先看[安全练习](../safe-practice/)。
 
 <GuidedVocalTrainer routine="daily" />
 
 <details>
 <summary>今天这套练什么？</summary>
 
-默认顺序已经排好：闭嘴轻哼 → 轻声“马姆” → 同一句稳稳唱三遍 → 小声、正常、小声 → 记住旋律再回唱。先用舒适的中音完成动作，不测最高音。
+半闭合热身 → 哼鸣 → mum 琶音 → 同音高元音链 → da 灵活性。默认全是带音高的跟唱，不夹入旋律记忆测试。
 
-每项先留至少8秒看提示，完整听一次参考音，看到倒数结束和“现在唱”再开口。每次换音型、重来或进入下一项都会重新准备；上一项结束后停住，休息多久由你决定。
+每项开始前留8–10秒准备，最后4拍给起拍信号，随后直接跟着琴声唱；不强制先听示范。音高和节拍在跟唱时持续，换气和换调也有拍子。唱完一项后停住，点“下一项”才开始，仍会重新准备。
 
-页面大字告诉你现在发什么声音，下面的字会随音轨逐个亮起。暂停以后点继续，会先回到这一句的准备段，不从半个音中间突然接上。
+屏幕主要显示音节、音级、节拍和轮次。暂停后继续会回到这一句的准备位置，不从半个音中间接上。
 
-总时长按实际音轨计算，显示在开始按钮上方；手动休息另计。做完默认流程就可以结束，完整练习库不是当天任务清单。
+显示时长来自实际音轨，手动休息另计。不需要唱完整个练习库，也不因按时播完就算能力通过。
 </details>
 
 <details>
-<summary>其他专项、教程和通关</summary>
+<summary>换专项、查教程</summary>
 
-需要专门处理某个问题时，再进入对应页面；每页也都有一套默认流程，不用先挑卡。
+[基础发声](../breath-phonation-resonance/) · [换区与稳定性](../high-notes-and-mix/) · [弱唱与动态](../soft-singing/) · [旋律听唱](../pitch-and-ear/) · [英文节奏](../melody-and-english/) · [歌曲迁移](../song-application/)
 
-[基础发声](../breath-phonation-resonance/) · [换区与稳定性](../high-notes-and-mix/) · [小声歌唱](../soft-singing/) · [旋律听唱](../pitch-and-ear/) · [英文节奏](../melody-and-english/) · [歌曲迁移](../song-application/)
+各页都可以直接开始默认顺序，或展开“只练某一项”。固定调三遍、闭到开元音、高点停留、弱中弱等已补专项全部保留。
 
-正式声乐阶段仍先做[固定基线](../baseline/)，再按[前8个能力单元](../first-8-weeks/)调整重点。当前吉他主线期间的可选维护不自动推进声乐关卡。
+只有听唱专项需要先听和留空，那是耳训任务本身，不是普通练声的默认教学流程。自选歌曲A/B是辅助计时，不含原曲伴奏。
 
-完成播放只表示流程走完。通关仍要看跨日复现、同一句的重复质量和真实歌词中的迁移，不以进度条或控件上限作为成绩。
+正式声乐阶段仍先做[固定基线](../baseline/)，再按[前8个能力单元](../first-8-weeks/)安排重点。网页改版不自动推进个人能力关卡。
 </details>
 
 <details>
-<summary>某个音节不知道怎么读</summary>
+<summary>音节字典（备用）</summary>
 
-这里只核对读法；浏览器读音不是真人声乐范唱。平常跟练不用把字典全部看完。
+熟悉练法时不用打开。这里的浏览器读音只核对字音，不是真人范唱。
 
 <VocalSyllableGuide />
 </details>
 
 <details>
-<summary>有练声瓶时怎么用</summary>
+<summary>练声瓶和安全</summary>
 
-默认流程不需要器材。选择半闭合单条练习时，可在设置里选择已经按原厂说明装好的练声瓶；无瓶则使用有声 v。唇颤已熟悉者也可替代，不靠猛吹维持声音。
+半闭合热身默认用唇颤或有声v；有练声瓶时，在设置里选择已按原厂说明装好的器材。型号未确认前只遵循原厂水位、管深和装配说明，不使用通用厘米数。
 
-设备型号未确认前，只遵循原厂水位、管深和装配说明；不使用通用厘米数。头晕、咳嗽、疼痛或发声费力时停止。
+疼痛、沙哑、说话费力或明显不适时停止；具体见[安全练习](../safe-practice/)。轻量练习不是治疗。
 </details>
 
 <details>
-<summary>手机音量与播放方式</summary>
+<summary>手机音量</summary>
 
-这版把参考音、倒数和休息编入同一条媒体音轨，用真正的音频播放器播放。画面读取音轨时间，不再用多个定时器分别驱动琴声和文字。在支持 Audio Session API 的浏览器上额外请求 playback 模式；不申请麦克风。
+仍使用同一条真实媒体音轨，通过音频播放器播放，屏幕跟随音轨时间。点“先试声音”，播放时用手机音量键调媒体音量；再检查蓝牙输出或音轨响度。
 
-点“先试声音”，在播放过程中用手机音量键调媒体音量；仍然偏小时再检查蓝牙输出和“音轨响度”。应用内浏览器行为可能不同，不能仅凭电脑测试保证每台手机一致。
+保留支持时的playback音频会话设置，不申请麦克风。不同系统和应用内浏览器仍可能有差异，电脑测试不能代替你的手机实测。
 
-技术依据：[W3C Audio Session](https://www.w3.org/TR/audio-session/)；[WebKit 关于网页音频与静音开关的说明](https://bugs.webkit.org/show_bug.cgi?id=237322)。
+技术参考：[W3C Audio Session](https://www.w3.org/TR/audio-session/)；[WebKit 音频会话说明](https://bugs.webkit.org/show_bug.cgi?id=237322)。
 </details>
 
 <details>
-<summary>真人跟练参考</summary>
+<summary>伴练形式参考</summary>
 
-南门声乐的[基础练声](https://www.bilibili.com/video/BV1QG4y1G7Fk/)、[男声练声](https://www.bilibili.com/video/BV1LRqHB1EWf/)和[头声练习](https://www.bilibili.com/video/BV1ueswzNEvc/)可作为外部参考。本站只借鉴把训练顺序预先编排、让学习者直接进入跟练的形式，不转载其录音、视频或课件。
+南门的[纯音阶、无教程基础练声](https://www.bilibili.com/video/BV1QG4y1G7Fk/)和[钢琴和弦跟练](https://www.bilibili.com/video/BV1cj411Y7nK/)明确区分练法学习与跟练。本站采用已会动作后直接跟音高、节拍练习的定位，不复制第三方音轨或课件。
 
-本站参考音是合成音高、节奏和动态示意，不冒充老师范唱；发声动作不清楚时仍需真人示范和教师反馈。
+本次参考核验基于公开视频介绍，不声称逐秒复刻或完整看过所有音画。本站声音是原创合成伴练音轨，不是真人范唱。
 </details>
