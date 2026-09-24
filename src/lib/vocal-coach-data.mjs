@@ -90,7 +90,7 @@ export const DRILLS = {
     rhythm('english-full', '把轻的音节加回去'),
     rhythm('english-one-note', '同一个音，唱完整句子', { tones: Array(16).fill(0) }),
     rhythm('english-melody', '带着旋律唱，不拖拍', { notes: [0,2,4], tones: EN_TONES }),
-    rhythm('english-pickup', '从弱拍进来，不抢第一拍', { pickup: 'and', hint: '倒数最后一拍的后半拍读 and，下一拍读 TAKE。' }),
+    rhythm('english-pickup', '从弱拍进来，不抢第一拍', { pickup: 'and', hint: '先读弱起的 and，紧接下一拍读 TAKE；跟着亮起的词读。' }),
   ],
   song: [
     scale('song-vowels', '先唱“啊”，再加回歌词', '今天慢慢唱', THREE, {
