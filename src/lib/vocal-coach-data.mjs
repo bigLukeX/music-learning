@@ -111,7 +111,7 @@ export const DRILLS = {
 export const ALL_DRILLS = Object.values(DRILLS).flat();
 export const findDrill = (id) => ALL_DRILLS.find((drill) => drill.id === id);
 export const QUEUES = {
-  daily: ['daily-hum','foundation-mum','high-fixed-repeat','soft-arc','ear-irregular-delay'],
+  daily: ['daily-sovt','daily-hum','daily-mum','daily-vowels','daily-agility'],
   foundation: ['foundation-vv','foundation-mum','foundation-vowels','foundation-lyric'],
   high: ['daily-hum','high-fixed-repeat','high-open-vowel','high-enter-hold-exit'],
   soft: ['soft-sustain','soft-medium-soft','soft-arc'],

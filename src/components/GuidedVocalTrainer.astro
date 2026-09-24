@@ -6,72 +6,67 @@ const { routine } = Astro.props;
 const queue = QUEUES[routine];
 const duration = queue.reduce((total, id) => total + compileDrill(findDrill(id)).duration, 0);
 ---
-<guided-vocal-trainer class="vocal-coach" data-routine={routine} data-version="media-coach-v1">
+<guided-vocal-trainer class="vocal-coach" data-routine={routine} data-version="backing-v2">
   <section aria-label={ROUTINE_NAMES[routine]}>
     <div class="coach-intro" data-home>
-      <p class="coach-eyebrow">不用先学设置，直接跟着做</p>
+      <p class="coach-eyebrow">音高 + 节拍 · 直接跟唱</p>
       <h2>{ROUTINE_NAMES[routine]}</h2>
-      <p>先听一遍，倒数后再唱。每小段做完，准备好了再点下一项。</p>
-      <p class="coach-summary" data-summary>{queue.length} 个短练 · 约 {formatTime(duration)}，另留自行休息的时间</p>
+      <p>{routine === 'ear' ? '听一句，留空唱一句。' : '准备倒数后跟琴唱，留拍换气，自动换调。'}</p>
+      <p class="coach-summary" data-summary>{queue.length} 项 · {formatTime(duration)} · 单项结束后手动继续</p>
       <div class="coach-main-actions">
-        <button type="button" class="coach-primary" data-start>开始今天的跟练</button>
+        <button type="button" class="coach-primary" data-start>开始跟练</button>
         <button type="button" data-test>先试声音</button>
       </div>
     </div>
-
     <div class="coach-screen" data-screen hidden tabindex="-1">
       <div class="coach-screen-top"><span data-position></span><span data-time>0:00</span></div>
       <p class="coach-item" data-item></p>
       <h3 data-phase aria-live="polite">准备</h3>
       <p class="coach-current" data-current></p>
-      <p class="coach-instruction" data-instruction></p>
       <div class="coach-notes" data-notes aria-hidden="true"></div>
+      <div class="coach-beats" data-beats aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span></div>
+      <p class="coach-instruction" data-instruction></p>
       <p class="coach-count" data-count></p>
       <progress data-progress max="100" value="0" aria-label="本项进度"></progress>
       <div class="coach-transport" data-transport>
         <button type="button" data-pause>暂停</button>
-        <button type="button" data-restart>重来这一句</button>
+        <button type="button" data-restart>重来这句</button>
         <button type="button" data-stop>结束</button>
       </div>
       <div class="coach-finish" data-finish hidden>
         <p data-next-label></p>
-        <button type="button" class="coach-primary" data-next>开始下一项</button>
-        <button type="button" data-again>再做这一项</button>
-        <button type="button" data-done>今天结束</button>
+        <button type="button" class="coach-primary" data-next>下一项</button>
+        <button type="button" data-again>再练一次</button>
+        <button type="button" data-done>结束</button>
       </div>
     </div>
-    <p class="coach-status" data-status role="status">音高不舒服时停下调整；不需要唱到最高，也不用完成全部项目。</p>
-    <p class="coach-safety">疼痛、沙哑或说话费力时停止。这里的“示范”是合成参考音，不是真人范唱，也不会自动判断你唱得对不对。</p>
-
+    <p class="coach-status" data-status role="status"></p>
+    <p class="coach-safety">音高超出舒适范围就停下；疼痛、沙哑或说话费力时不练。</p>
+    <details class="coach-extra" data-library>
+      <summary>只练某一项</summary>
+      <div class="coach-library">
+        {DRILLS[routine].map((ex) => <article><div><strong>{ex.title}</strong><small data-length={ex.id}>{formatTime(compileDrill(ex).duration)}</small></div><button type="button" data-drill={ex.id}>开始</button></article>)}
+      </div>
+    </details>
     <details class="coach-extra" data-settings>
-      <summary>音调不合适，或想调整速度</summary>
-      <p>不用认识音名也能先开始。调整后会停止旧播放，再按开始；不会突然换音。</p>
+      <summary>调音高 / 速度</summary>
+      <div class="coach-adjust"><button type="button" data-down>低半音</button><button type="button" data-up>高半音</button></div>
       <div class="coach-settings-grid">
         <label>起音<select data-root>{Array.from({length:30}, (_, i) => i + 36).map((n) => <option value={n} selected={n === 48}>{noteName(n)}</option>)}</select></label>
-        <label>不超过这个音<select data-ceiling>{Array.from({length:25}, (_, i) => i + 52).map((n) => <option value={n} selected={n === 64}>{noteName(n)}</option>)}</select></label>
-        <label>速度<select data-tempo><option value="0">按本项默认速度</option><option value="50">慢一点 · 50</option><option value="60">60</option><option value="72">72</option></select></label>
+        <label>音高上限<select data-ceiling>{Array.from({length:25}, (_, i) => i + 52).map((n) => <option value={n} selected={n === 64}>{noteName(n)}</option>)}</select></label>
+        <label>速度<select data-tempo><option value="0">默认</option><option value="50">50 BPM</option><option value="60">60 BPM</option><option value="72">72 BPM</option></select></label>
         <label>音轨响度<select data-loudness><option value="0.55">柔和</option><option value="0.8" selected>正常</option><option value="1">更清楚</option></select></label>
-        <label>半闭合类练习<select data-bottle><option value="no">不用器材，使用有声 v</option><option value="yes">使用已按说明装好的练声瓶</option></select></label>
+        <label>半闭合练习<select data-bottle><option value="no">唇颤 / 有声 v</option><option value="yes">练声瓶（已按说明装好）</option></select></label>
       </div>
-      <div class="coach-adjust"><button type="button" data-down>整体低半音</button><button type="button" data-up>整体高半音</button></div>
+      <p>设置会记住。改变设置会停止旧音轨，再按开始；上限不是必须唱到的目标。</p>
     </details>
-
-    <details class="coach-extra" data-library>
-      <summary>只练某一项：展开完整练习库</summary>
-      <p>这些练习仍然保留。日常使用不需要从这里挑，直接按上面的“开始”。</p>
-      <div class="coach-library">
-        {DRILLS[routine].map((ex) => <article><div><strong>{ex.title}</strong><small>{ex.hint || `用“${ex.say}”练习。`}<span data-length={ex.id}>约 {formatTime(compileDrill(ex).duration)}</span></small></div><button type="button" data-drill={ex.id}>练这一项</button></article>)}
-      </div>
-    </details>
-
     <details class="coach-extra" data-audio-help>
       <summary>声音小或没声音？</summary>
-      <p>先点“先试声音”，播放时按手机音量键调<strong>媒体音量</strong>。再检查蓝牙耳机输出；也可以在上面把音轨响度改为“更清楚”。</p>
-      <p>下方是同一条真实音轨的系统播放器。遇到应用内浏览器限制时，可以直接点它播放，或在手机系统浏览器打开本页。</p>
+      <p>点“先试声音”，播放时用手机音量键调媒体音量。检查蓝牙输出，或把音轨响度调为“更清楚”。</p>
       <audio data-audio controls preload="auto" aria-label="跟练音轨系统播放器"></audio>
-      <p data-audio-status>不调用麦克风，不切换到通话或录音模式。</p>
+      <p data-audio-status>同一媒体音轨，不申请麦克风。应用内浏览器受限时，使用手机系统浏览器。</p>
     </details>
-    <noscript>请启用 JavaScript 使用跟练播放器；下面的教程仍可阅读。</noscript>
+    <noscript>请启用 JavaScript 使用跟练播放器；教程仍可阅读。</noscript>
   </section>
 </guided-vocal-trainer>
 <script>
@@ -79,46 +74,45 @@ const duration = queue.reduce((total, id) => total + compileDrill(findDrill(id))
   installVocalCoach();
 </script>
 <style is:global>
-.vocal-coach{display:block;margin:1.2rem 0 2rem;border:1px solid var(--sl-color-gray-5);border-radius:1.2rem;padding:1.15rem;background:var(--sl-color-bg);color:var(--sl-color-text)}
-.vocal-coach [hidden]{display:none!important}
+.vocal-coach{display:block;margin:1rem 0 2rem;border:1px solid var(--sl-color-gray-5);border-radius:1.2rem;padding:1.15rem;background:var(--sl-color-bg);color:var(--sl-color-text)}
+.vocal-coach [hidden]{display:none!important}.vocal-coach p{line-height:1.5}
 .vocal-coach .coach-eyebrow{font-size:.82rem;font-weight:750;color:var(--sl-color-text-accent);margin:0}
 .vocal-coach h2{margin:.4rem 0 .6rem!important;font-size:1.65rem}
-.vocal-coach p{line-height:1.6}
-.vocal-coach .coach-summary{font-size:.9rem;color:var(--sl-color-gray-2)}
+.vocal-coach .coach-summary{font-size:.85rem;color:var(--sl-color-gray-2)}
 .vocal-coach button{font:inherit;font-weight:700;color:inherit;min-height:48px;padding:.65rem 1rem;border:1px solid var(--sl-color-gray-4);border-radius:.7rem;background:var(--sl-color-gray-6);cursor:pointer}
 .vocal-coach button:disabled{opacity:.45;cursor:not-allowed}
 .vocal-coach button:focus-visible,.vocal-coach summary:focus-visible{outline:3px solid var(--sl-color-text-accent);outline-offset:3px}
 .vocal-coach .coach-primary{background:var(--sl-color-text-accent);color:var(--sl-color-bg);border-color:transparent;font-size:1.1rem}
 .vocal-coach .coach-main-actions{display:grid;grid-template-columns:2fr 1fr;gap:.65rem;margin:1rem 0}
-.vocal-coach .coach-screen{border-radius:1rem;background:var(--sl-color-gray-6);padding:1rem;scroll-margin-top:5rem;min-height:27rem;text-align:center}
+.vocal-coach .coach-screen{border-radius:1rem;background:var(--sl-color-gray-6);padding:1rem;scroll-margin-top:5rem;min-height:25rem;text-align:center}
 .vocal-coach .coach-screen-top{display:flex;justify-content:space-between;font-size:.8rem;color:var(--sl-color-gray-2)}
 .vocal-coach .coach-item{font-size:.85rem;margin:.7rem 0 .3rem}
-.vocal-coach [data-phase]{margin:.25rem 0;font-size:clamp(1.4rem,5vw,2rem)}
-.vocal-coach .coach-current{font-size:clamp(2rem,8vw,3.5rem);font-weight:800;line-height:1.3;min-height:1.4em;margin:.5rem 0;overflow-wrap:anywhere}
-.vocal-coach .coach-instruction{font-size:.95rem;min-height:3.2em;margin:.4rem 0}
-.vocal-coach .coach-notes{display:flex;flex-wrap:wrap;justify-content:center;gap:.35rem;min-height:3rem;max-width:100%;margin:.8rem 0}
-.vocal-coach .coach-note{display:grid;place-items:center;padding:.35rem .5rem;min-width:2.25rem;min-height:2.6rem;border:1px solid var(--sl-color-gray-4);border-radius:.5rem;font-size:.9rem;line-height:1.2}
+.vocal-coach [data-phase]{margin:.25rem 0;font-size:1.35rem}
+.vocal-coach .coach-current{font-size:clamp(2.2rem,9vw,3.5rem);font-weight:800;line-height:1.2;min-height:1.3em;margin:.5rem 0;overflow-wrap:anywhere}
+.vocal-coach .coach-instruction{font-size:.85rem;color:var(--sl-color-gray-2);min-height:1.4em;margin:.5rem 0}
+.vocal-coach .coach-notes{display:flex;flex-wrap:wrap;justify-content:center;gap:.35rem;min-height:2.6rem;max-width:100%;margin:.6rem 0}
+.vocal-coach .coach-note{display:grid;place-items:center;padding:.35rem .5rem;min-width:2.2rem;min-height:2.5rem;border:1px solid var(--sl-color-gray-4);border-radius:.5rem;font-size:1rem;line-height:1.2}
 .vocal-coach .coach-note.is-active{background:var(--sl-color-text-accent);color:var(--sl-color-bg);border-color:transparent;font-weight:800}
-.vocal-coach .coach-count{font-size:1.2rem;font-variant-numeric:tabular-nums;min-height:1.6em;margin:.5rem 0}
+.vocal-coach .coach-beats{display:flex;gap:.6rem;justify-content:center;margin:.9rem 0 .4rem}
+.vocal-coach .coach-beats span{width:1.75rem;height:1.75rem;display:grid;place-items:center;border-radius:50%;border:1px solid var(--sl-color-gray-4);font-size:.8rem}
+.vocal-coach .coach-beats .is-active{background:var(--sl-color-text-accent);color:var(--sl-color-bg);border-color:transparent}
+.vocal-coach .coach-count{font-size:.88rem;font-variant-numeric:tabular-nums;min-height:1.5em;margin:.4rem 0}
 .vocal-coach progress{width:100%;height:.5rem;accent-color:var(--sl-color-text-accent)}
 .vocal-coach .coach-transport{display:flex;gap:.4rem;justify-content:center;flex-wrap:wrap;margin-top:.8rem}
 .vocal-coach .coach-transport button{flex:1 1 auto;font-size:.9rem;padding:.5rem}
 .vocal-coach .coach-finish{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-top:1rem}
 .vocal-coach .coach-finish p{flex-basis:100%;margin:0 0 .5rem}
-.vocal-coach .coach-status{font-size:.88rem;margin:.8rem 0 .35rem}
-.vocal-coach .coach-safety{font-size:.78rem;color:var(--sl-color-gray-2);margin:.35rem 0 1rem}
-.vocal-coach .coach-extra{border-top:1px solid var(--sl-color-gray-5);margin:.7rem 0 0;padding:.65rem 0}
+.vocal-coach .coach-status{font-size:.88rem;margin:.6rem 0}.vocal-coach .coach-status:empty{display:none}
+.vocal-coach .coach-safety{font-size:.78rem;color:var(--sl-color-gray-2);margin:.7rem 0}
+.vocal-coach .coach-extra{border-top:1px solid var(--sl-color-gray-5);margin:.6rem 0 0;padding:.65rem 0}
 .vocal-coach summary{cursor:pointer;min-height:2rem;font-size:.94rem;font-weight:650}
-.vocal-coach .coach-extra p{font-size:.88rem;color:var(--sl-color-gray-2)}
+.vocal-coach .coach-extra p{font-size:.85rem;color:var(--sl-color-gray-2)}
 .vocal-coach .coach-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:.75rem}
 .vocal-coach label{display:grid;gap:.3rem;font-size:.85rem}
 .vocal-coach select{font:inherit;min-height:44px;color:var(--sl-color-text);background:var(--sl-color-bg);border:1px solid var(--sl-color-gray-4);border-radius:.5rem;padding:.5rem;width:100%}
 .vocal-coach .coach-adjust{display:flex;gap:.5rem;margin-top:.8rem}
 .vocal-coach .coach-library article{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.85rem 0;border-bottom:1px solid var(--sl-color-gray-5)}
-.vocal-coach .coach-library strong{font-size:.96rem}
-.vocal-coach .coach-library small{display:block;font-size:.78rem;color:var(--sl-color-gray-2);margin:.25rem 0}
-.vocal-coach [data-length]{display:block;margin-top:.2rem}
-.vocal-coach .coach-library button{flex-shrink:0;white-space:nowrap;font-size:.85rem}
-.vocal-coach audio{width:100%}
-@media(max-width:40rem){.vocal-coach{padding:.8rem}.vocal-coach .coach-main-actions{grid-template-columns:1fr}.vocal-coach .coach-settings-grid{grid-template-columns:1fr}.vocal-coach .coach-screen{padding:.8rem}.vocal-coach .coach-note{min-width:1.75rem;padding:.3rem;font-size:.8rem}.vocal-coach .coach-finish .coach-primary{width:100%}}
+.vocal-coach .coach-library strong{font-size:.96rem}.vocal-coach .coach-library small{display:block;font-size:.78rem;color:var(--sl-color-gray-2);margin:.25rem 0}
+.vocal-coach .coach-library button{flex-shrink:0;white-space:nowrap;font-size:.85rem}.vocal-coach audio{width:100%}
+@media(max-width:40rem){.vocal-coach{padding:.8rem}.vocal-coach .coach-main-actions{grid-template-columns:1fr}.vocal-coach .coach-settings-grid{grid-template-columns:1fr}.vocal-coach .coach-screen{padding:.8rem}.vocal-coach .coach-note{min-width:1.75rem;padding:.3rem;font-size:.9rem}.vocal-coach .coach-finish .coach-primary{width:100%}}
 </style>

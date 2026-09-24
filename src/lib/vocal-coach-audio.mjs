@@ -29,10 +29,10 @@ export function compileDrill(ex, settings = {}) {
   const tone = (at, duration, midi, extra = {}) => events.push({ at, duration, midi, kind: 'piano', amp: .4, ...extra });
   const click = (at, accent = false) => events.push({ at, duration: .055, kind: 'click', amp: accent ? .15 : .09, accent });
   const count = (n, instruction, pitch = null, first = false) => {
-    const s = add('count', n * beat, first ? '准备开口' : '休息一下，再来', instruction);
+    const s = add('count', n * beat, first ? '准备' : '换气', instruction);
     for (let i = 0; i < n; i++) click(s.at + i * beat, i === 0);
     if (pitch !== null) tone(s.at, Math.min(.65, beat * .7), pitch, { amp: .25 });
-    s.count = n; return s.at;
+    s.count = n; s.countAt = s.at; return s.at;
   };
   const pattern = (notes, r, mode, labels, hint, restartAt, beats = null) => {
     const lengths = beats || notes.map(() => 1);
@@ -41,11 +41,13 @@ export function compileDrill(ex, settings = {}) {
       const item = { at: offset, duration: lengths[i] * beat, label: mode === 'echo' ? '•' : n === null ? '停' : labels?.[i] || ex.say, note: n };
       offset += item.duration; return item;
     });
-    const s = add(mode, offset, mode === 'demo' ? '先听，不用唱' : mode === 'verify' ? '只听，核对刚才那一句' : '现在唱', hint, steps, restartAt);
+    const s = add(mode, offset, mode === 'demo' ? '先听，不用唱' : mode === 'verify' ? '核对' : '跟唱', hint, steps, restartAt);
     if (mode !== 'echo') steps.forEach((step) => {
       if (step.note !== null) tone(s.at + step.at, step.duration * .95, r + step.note);
     });
     else steps.forEach((step, i) => click(s.at + step.at, i === 0));
+    // Keep a steady pulse under the reference pitches, not only during rests.
+    if (mode === 'sing') for (let i = 0; i < offset / beat - 1e-8; i++) click(s.at + i * beat, i % 4 === 0);
     return s;
   };
   const sustained = (r, mode, restartAt) => {
@@ -56,22 +58,24 @@ export function compileDrill(ex, settings = {}) {
       steps.push({ at: offset, duration: lengths[i] * beat, label, note: 0 }); offset += lengths[i] * beat;
       if (ex.between && i < levels.length - 1) { steps.push({ at: offset, duration: ex.between * beat, label: '休息', note: null }); offset += ex.between * beat; }
     });
-    const s = add(mode, offset, mode === 'demo' ? '先听音高和长短' : '现在唱', ex.hint || '音量不用大，保持轻松。', steps, restartAt);
+    const s = add(mode, offset, mode === 'demo' ? '先听音高和长短' : '跟唱', ex.hint || '音量不用大，保持轻松。', steps, restartAt);
     if (ex.type === 'dynamics' && !ex.between) {
       tone(s.at, s.duration, r, { kind: 'sustain', levels: levels.map((v) => /小|弱/.test(v) ? .48 : 1), levelSeconds: lengths.map((n) => n * beat) });
     } else {
       steps.forEach((step) => { if (step.note !== null) tone(s.at + step.at, step.duration, r, { kind: 'sustain', amp: /小|弱/.test(step.label) ? .22 : .4 }); });
     }
+    if (mode === 'sing') for (let i = 0; i < offset / beat - 1e-8; i++) click(s.at + i * beat, i % 4 === 0);
     return s;
   };
   const glide = (r, mode, restartAt) => {
     const lengths = ex.beats || [3,3];
-    const s = add(mode, sum(lengths) * beat, mode === 'demo' ? '先听滑动的路线' : '现在用“呜”滑动', '连续滑，不唱成三个台阶。', [
+    const s = add(mode, sum(lengths) * beat, mode === 'demo' ? '先听滑动的路线' : '跟唱', '', [
       { at: 0, duration: lengths[0] * beat, label: '呜 ↗', note: 0 },
       { at: lengths[0] * beat, duration: lengths[1] * beat, label: '呜 ↘', note: 7 },
     ], restartAt);
     tone(s.at, lengths[0] * beat, r, { kind: 'glide', endMidi: r + 7 });
     tone(s.at + lengths[0] * beat, lengths[1] * beat, r + 7, { kind: 'glide', endMidi: r });
+    if (mode === 'sing') for (let i = 0; i < s.duration / beat - 1e-8; i++) click(s.at + i * beat, i % 4 === 0);
     return s;
   };
   const grid = (mode, restartAt) => {
@@ -88,9 +92,10 @@ export function compileDrill(ex, settings = {}) {
       if (ex.tones) tone(at, units * beat / 2 * .95, root + ex.tones[i], { amp: .3 });
       else if (mode === 'demo') click(at, label === label.toUpperCase());
     });
+    return s;
   };
 
-  add('prepare', Math.max(8, ex.prep || 8), '先看这一项，不用唱', ex.hint || `等“现在唱”出现，再用“${ex.say}”跟着唱。`);
+  const preparation = add('prepare', Math.max(8, 4 * beat, ex.prep || 8), '准备', '');
   if (pitched) tone(.6, .9, root + (ex.notes?.find(Number.isFinite) || 0), { amp: .24 });
   if (ex.type === 'manual') {
     for (const [label, seconds] of ex.phases) {
@@ -120,18 +125,39 @@ export function compileDrill(ex, settings = {}) {
       if (ex.type === 'rhythm') return grid(mode, restart);
       return pattern(ex.notes, r, mode, labelsFor(round), ex.roundHints?.[round] || ex.hint || '跟着亮起的字唱，保持轻松。', restart, ex.beats);
     };
-    perform(roots[0], 'demo', clock);
+    // These are accompaniment drills for an already-known action, not a lesson.
+    // The first four-beat count-in lives INSIDE the preparation, with no forced demo.
+    const pickup = ex.type === 'rhythm' && ex.pickup ? beat / 2 : 0;
+    preparation.count = 4;
+    preparation.countAt = preparation.at + preparation.duration + pickup - 4 * beat;
+    for (let i = 0; i < 4; i++) click(preparation.countAt + i * beat, i === 0);
     let iteration = 0;
     roots.forEach((r) => {
       for (let round = 0; round < (ex.repeats || 1); round++) {
-        const hint = ex.roundHints?.[round] || `接下来唱“${ex.tool ? settings.bottle ? '练声瓶' : 'v——' : ex.say}”`;
-        const restart = count(iteration ? Math.max(4, ex.rest || 4) : 4, hint, pitched ? r + (ex.notes?.find(Number.isFinite) || 0) : null, iteration === 0);
-        perform(r, 'sing', restart, round); iteration++;
+        const hint = ex.roundHints?.[round] || '';
+        // A pickup occupies the last half beat before beat one, rather than
+        // pushing the next phrase's beat one half a beat late on every repeat.
+        const gap = Math.max(4, ex.rest || 4) - pickup / beat;
+        const restart = iteration ? count(gap, hint, pitched ? r + (ex.notes?.find(Number.isFinite) || 0) : null) : preparation.at;
+        const segment = perform(r, 'sing', restart, round);
+        segment.root = r;
+        segment.round = iteration + 1;
+        segment.totalRounds = roots.length * (ex.repeats || 1);
+        segment.pulseAt = segment.at + pickup;
+        segment.instruction = hint;
+        if (iteration) {
+          const gapSegment = segments[segments.length - 2];
+          gapSegment.nextSteps = segment.steps;
+          gapSegment.root = r;
+          gapSegment.round = segment.round;
+          gapSegment.totalRounds = segment.totalRounds;
+        }
+        iteration++;
       }
     });
   }
-  add('rest', ex.post || 6, '这一项完成，先休息', '下一项不会自动开始。');
-  return { id: ex.id, title: ex.title, bpm, beat, root, roots, lowest: pitched ? root + min : null, highest: pitched ? Math.max(...roots) + max : null, segments, events, duration: clock };
+  add('rest', ex.post || 6, '休息', '');
+  return { id: ex.id, title: ex.title, say: ex.tool ? settings.bottle ? '练声瓶' : 'v——' : ex.say, exerciseType: ex.type, bpm, beat, root, roots, lowest: pitched ? root + min : null, highest: pitched ? Math.max(...roots) + max : null, segments, events, duration: clock };
 }
 
 export function segmentAt(plan, time) {
