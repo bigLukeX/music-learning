@@ -1,109 +1,101 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const vm = require('node:vm');
-const assert = require('node:assert/strict');
+const { pathToFileURL } = require('node:url');
+const root = path.resolve(__dirname, '..');
+const load = (name) => import(pathToFileURL(path.join(root, 'src/lib', name)).href);
+const modules = Promise.all([load('vocal-coach-data.mjs'), load('vocal-coach-audio.mjs')]);
 
-const rootDir = process.argv[2] || path.resolve(__dirname, '..');
-const file = path.join(rootDir, 'src/components/GuidedVocalTrainer.astro');
-const source = fs.readFileSync(file, 'utf8');
-const script = source.split('<script>')[1].split('</script>')[0];
-const classes = new Map();
+test('all existing vocal IDs and every default queue are retained and valid', async () => {
+  const [{ ALL_DRILLS, QUEUES, findDrill }, { compileDrill }] = await modules;
+  assert.equal(ALL_DRILLS.length, 38);
+  assert.equal(new Set(ALL_DRILLS.map((d) => d.id)).size, ALL_DRILLS.length);
+  for (const id of ['high-fixed-repeat','high-open-vowel','high-enter-hold-exit','soft-arc','ear-irregular-delay','english-pickup','foundation-lyric','song-ab']) assert(findDrill(id));
+  for (const [routine, ids] of Object.entries(QUEUES)) {
+    assert(ids.length > 0, routine);
+    for (const id of ids) { assert(findDrill(id), id); assert(compileDrill(findDrill(id)).duration > 0); }
+  }
+  for (const ex of ALL_DRILLS) {
+    const p = compileDrill(ex); assert.equal(p.segments[0].mode, 'prepare'); assert(p.segments[0].duration >= 8);
+    assert.equal(p.segments.at(-1).mode, 'rest'); assert(p.segments.at(-1).duration >= 6);
+    let t = 0;
+    for (const s of p.segments) { assert(Math.abs(s.at - t) < 1e-8); assert(s.duration > 0); t += s.duration; }
+    assert(Math.abs(t - p.duration) < 1e-8); assert(p.duration < 180, ex.id);
+    for (const e of p.events) { assert(e.at >= 0); assert(e.duration > 0); assert(e.at + e.duration <= p.duration + 1e-8); }
+  }
+});
 
-vm.runInNewContext(script, {
-  Error,
-  HTMLElement: class {},
-  customElements: {
-    get: key => classes.get(key),
-    define: (key, value) => classes.set(key, value),
-  },
-  window: {},
-  document: {},
-}, { filename: file });
+test('range limits and tempo are real plan inputs, not cosmetic controls', async () => {
+  const [{ ALL_DRILLS, findDrill }, { compileDrill }] = await modules;
+  for (const ex of ALL_DRILLS) for (const root of [36,45,48,60,65]) for (const ceiling of [52,60,64,69,76]) {
+    try { const p = compileDrill(ex, {root,ceiling}); assert(p.highest === null || p.highest <= ceiling, ex.id); }
+    catch (e) { assert.match(e.message, /上限|范围/); }
+  }
+  const ex = findDrill('foundation-mum'); assert(compileDrill(ex, {tempo:50}).duration > compileDrill(ex, {tempo:72}).duration);
+  assert.throws(() => compileDrill(findDrill('daily-octave'), {root:60,ceiling:64}), /上限/);
+});
 
-const Trainer = classes.get('guided-vocal-trainer');
-assert(Trainer, 'guided vocal trainer custom element was not registered');
+test('fixed repeats, staged vowels and genuinely held high note', async () => {
+  const [{ findDrill }, { compileDrill }] = await modules;
+  const fixed = compileDrill(findDrill('high-fixed-repeat'));
+  assert.deepEqual(fixed.roots, [48]); assert.equal(fixed.segments.filter(s => s.mode === 'sing').length, 3);
+  const vowel = compileDrill(findDrill('high-open-vowel')).segments.filter(s => s.mode === 'sing');
+  assert.deepEqual(vowel[0].steps.map(s => s.label), ['呜','呜','呜','呜','呜']);
+  assert.deepEqual(vowel[1].steps.map(s => s.label), ['呜','呜','啊','啊','啊']);
+  assert.deepEqual(vowel[2].steps.map(s => s.label), ['啊','啊','啊','啊','啊']);
+  const held = compileDrill(findDrill('high-enter-hold-exit'));
+  const phrase = held.segments.find(s => s.mode === 'sing');
+  const highEvents = held.events.filter(e => e.at >= phrase.at && e.at < phrase.at + phrase.duration && e.midi === 55);
+  assert.equal(highEvents.length, 1); assert(highEvents[0].duration > 1.8);
+});
 
-for (const routine of ['foundation','daily','high','soft','ear','english','song']) {
-  assert(source.includes(routine + ':'), 'missing exercise set: ' + routine);
-}
+test('delayed recall is actually silent and does not show pitch answers', async () => {
+  const [{ findDrill }, { compileDrill }] = await modules;
+  const plan = compileDrill(findDrill('ear-irregular-delay'));
+  const memories = plan.segments.filter(s => s.mode === 'memory'); assert.equal(memories.length, 3);
+  for (const m of memories) {
+    assert.equal(m.duration, 4);
+    assert(!plan.events.some(e => e.at < m.at + m.duration && e.at + e.duration > m.at));
+  }
+  for (const s of plan.segments.filter(s => s.mode === 'echo')) assert(s.steps.every(step => step.label === '•'));
+  assert.equal(plan.segments.filter(s => s.mode === 'verify').length, 3);
+  assert.notDeepEqual(plan.segments.filter(s => s.mode === 'demo')[0].steps.map(s => s.note), plan.segments.filter(s => s.mode === 'demo')[1].steps.map(s => s.note));
+});
 
-for (const card of [
-  'foundation-vv','foundation-mum','daily-sovt','daily-hum','daily-agility','daily-octave',
-  'high-sovt','high-wu-glide','high-mum-13531','high-gug','high-fixed-repeat','high-open-vowel','high-enter-hold-exit',
-  'soft-medium-soft','soft-decrescendo','soft-arc','ear-121','ear-melody','ear-irregular-delay',
-  'english-one-note','english-melody','english-pickup','song-vowels','song-layer'
-]) assert(source.includes(card), 'missing core vocal card: ' + card);
+test('English pickup precedes beat one and held vowels are not re-attacked', async () => {
+  const [{ findDrill }, { compileDrill }] = await modules;
+  const pickup = compileDrill(findDrill('english-pickup')).segments.find(s => s.mode === 'sing');
+  assert.equal(pickup.steps[0].label, 'and'); assert.equal(pickup.steps[1].label, 'TAKE'); assert.equal(pickup.steps[1].at, .5);
+  const p = compileDrill(findDrill('english-melody')); const s = p.segments.find(s => s.mode === 'sing');
+  const note = p.events.find(e => e.kind === 'piano' && Math.abs(e.at - s.at - 3) < 1e-9);
+  assert(note.duration > .9);
+});
 
-for (const behavior of ['专项短跟练','开始这条','下一条','下一条不会自动开始','准备','换调准备','结束休息']) {
-  assert(source.includes(behavior), 'missing short-practice behavior: ' + behavior);
-}
-assert(!source.includes('data-choice="repeat"'), 'old mid-exercise decision UI still exists');
+test('WAV is valid, audible, bounded and preserves silence', async () => {
+  const [{ findDrill }, { compileDrill, renderWav }] = await modules;
+  const p = compileDrill(findDrill('ear-irregular-delay'));
+  const wav = renderWav(p, {sampleRate:8000}); const v = new DataView(wav);
+  assert.equal(Buffer.from(wav).subarray(0,4).toString(), 'RIFF'); assert.equal(v.getUint32(24,true),8000);
+  assert.equal(v.getUint32(40,true), wav.byteLength - 44);
+  let peak = 0, power = 0, n = 0;
+  for(let i=44;i<wav.byteLength;i+=2){const a=v.getInt16(i,true)/32767;peak=Math.max(peak,Math.abs(a));if(Math.abs(a)>.001){power+=a*a;n++;}}
+  assert(peak>.2 && peak<=.801); assert(Math.sqrt(power/n)>.08);
+  const m = p.segments.find(s => s.mode === 'memory');
+  for(let i=Math.ceil((m.at+.01)*8000);i<Math.floor((m.at+m.duration-.01)*8000);i++) assert.equal(v.getInt16(44+i*2,true),0);
+  assert.throws(()=>renderWav({duration:Infinity}), /长度/);
+});
 
-const trainer = new Trainer();
-trainer.root = () => 48;
-trainer.ceiling = () => 64;
-
-const scale = {
-  type:'scale', pattern:[0,2,4,2,0], bpm:60, span:5, direction:'updown',
-  prep:6, gap:2, response:3, post:6, demo:true,
-};
-assert.equal(trainer.rootsFor(scale).length, 11);
-assert.equal(trainer.estimateSeconds(scale), 95, 'scale timing estimate drift');
-
-const repeatedScale = {
-  type:'scale', pattern:[0,2,4,2,0], bpm:60, span:0, direction:'up',
-  repeats:4, repeatGap:5, prep:6, response:3, post:6, demo:true,
-};
-assert.equal(trainer.estimateSeconds(repeatedScale), 55, 'same-key repeated scale timing drift');
-
-const sustain = {
-  type:'sustain', bpm:60, beats:4, restBeats:4, rounds:4, prep:6, post:6,
-};
-assert.equal(trainer.estimateSeconds(sustain), 44, 'sustain timing estimate drift');
-
-
-const targetedFixed = {
-  type:'scale', pattern:[0,2,4,2,0], bpm:60, span:0, direction:'up',
-  repeats:3, repeatGap:5, prep:8, response:3, post:8, demo:true,
-};
-assert.equal(trainer.rootsFor(targetedFixed).length, 1, 'fixed-area drill must stay on one root');
-assert.equal(trainer.estimateSeconds(targetedFixed), 49, 'fixed-area repeat timing drift');
-
-const dynamicArc = {
-  type:'dynamicArc', levels:['弱声','中声','弱声'], levelBeats:[2,2,2], restBeats:4,
-  bpm:60, span:3, direction:'up', prep:8, post:8,
-};
-assert.equal(trainer.estimateSeconds(dynamicArc), 56, 'weak-medium-weak timing drift');
-
-const delayedEcho = {
-  type:'delayedEcho', pattern:[0,4,2,7,4], bpm:60, span:1, direction:'updown',
-  prep:8, delayBeats:4, verify:true, verifyGap:2, gap:2, post:6,
-};
-assert.equal(trainer.rootsFor(delayedEcho).length, 3);
-assert.equal(trainer.estimateSeconds(delayedEcho), 83, 'delayed irregular echo timing drift');
-assert(source.includes("roundCues:['第1遍：全程 wu'"), 'open-vowel drill lost staged vowel cues');
-assert(source.includes("delayBeats:4"), 'delayed recall lost four-beat memory gap');
-
-const rhythm = {
-  type:'rhythm', bpm:60, repeats:6, prep:8, gap:2, post:4,
-};
-assert.equal(trainer.estimateSeconds(rhythm), 70, 'rhythm timing estimate drift');
-
-const manual = {
-  type:'manual', prep:8, post:10, phases:[['唱',6],['休息',12],['唱',6]],
-};
-assert.equal(trainer.estimateSeconds(manual), 42, 'manual timing estimate drift');
-
-console.log(JSON.stringify({
-  result:'PASS',
-  component:'GuidedVocalTrainer',
-  sets:7,
-  scaleSeconds:trainer.estimateSeconds(scale),
-  repeatedScaleSeconds:trainer.estimateSeconds(repeatedScale),
-  sustainSeconds:trainer.estimateSeconds(sustain),
-  fixedRepeatSeconds:trainer.estimateSeconds(targetedFixed),
-  dynamicArcSeconds:trainer.estimateSeconds(dynamicArc),
-  delayedEchoSeconds:trainer.estimateSeconds(delayedEcho),
-  rhythmSeconds:trainer.estimateSeconds(rhythm),
-  manualSeconds:trainer.estimateSeconds(manual),
-}, null, 2));
+test('playback mode is feature-detected, never requests microphone', async () => {
+  const [, {requestMediaPlayback}] = await modules;
+  const nav={audioSession:{type:'auto'}}; assert.equal(requestMediaPlayback(nav),true); assert.equal(nav.audioSession.type,'playback');
+  assert.equal(requestMediaPlayback({}),false);
+  const broken={};Object.defineProperty(broken,'audioSession',{get(){throw Error('unsupported')}});assert.equal(requestMediaPlayback(broken),false);
+  const player=fs.readFileSync(path.join(root,'src/lib/vocal-coach-player.mjs'),'utf8');
+  assert(player.includes("type: 'audio/wav'")); assert(player.includes('this.audio.play()'));
+  assert(!player.includes('getUserMedia'));assert(!player.includes('new AudioContext'));
+  const view=fs.readFileSync(path.join(root,'src/components/GuidedVocalTrainer.astro'),'utf8');
+  assert(view.includes('<audio data-audio controls'));assert(view.includes('开始今天的跟练'));assert(view.includes('先试声音'));
+  assert.match(view, /<details[^>]*data-library>/);assert.match(view, /<details[^>]*data-settings>/);
+  assert(!view.includes('data-library open'));assert(!view.includes('data-settings open'));
+});
